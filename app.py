@@ -139,7 +139,7 @@ def multimodal_understanding(model_type,
             cam_tensors, grid_size = gradcam.generate_cam(prepare_inputs, tokenizer, temperature, top_p, target_token_idx, visual_pooling_method, focus)
             gradcam.remove_hooks()
 
-            
+
             if focus == "Visual Encoder":
                 cam_grid = cam_tensors.reshape(grid_size, grid_size)
                 cam = [generate_gradcam(cam_grid, image)]
@@ -226,12 +226,12 @@ def model_slider_change(model_type):
         model_utils = ChartGemma_Utils()
         vl_gpt, tokenizer = model_utils.init_ChartGemma()
         language_model_max_layer = 18
-        language_model_best_layer = 12
+        language_model_best_layer = 15
 
         res = (
             gr.Dropdown(choices=["Visualization only", "answer + visualization"], value="Visualization only", label="response_type"),
-            gr.Slider(minimum=1, maximum=18, value=12, step=1, label="visualization layers min"),
-            gr.Slider(minimum=1, maximum=18, value=12, step=1, label="visualization layers max"),
+            gr.Slider(minimum=1, maximum=18, value=15, step=1, label="visualization layers min"),
+            gr.Slider(minimum=1, maximum=18, value=15, step=1, label="visualization layers max"),
             gr.Dropdown(choices=["Language Model"], value="Language Model", label="focus"),
             gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="saliency map type")
         )

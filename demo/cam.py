@@ -75,7 +75,6 @@ class AttentionGuidedCAMClip(AttentionGuidedCAM):
         output.backward(output_full.text_embeds[class_idx:class_idx+1], retain_graph=True)
 
         # Aggregate activations and gradients from ALL layers
-        print(self.activations, self.gradients)
         self.model.zero_grad()
         cam_sum = None
         for act, grad in zip(self.activations, self.gradients):
@@ -93,7 +92,7 @@ class AttentionGuidedCAMClip(AttentionGuidedCAM):
             cam, _ = (act * grad_weights).max(dim=-1)
             # cam, _ = grad_weights.max(dim=-1)
             # cam = self.normalize(cam)
-            print(cam.shape)
+            print("cam_shape: ", cam.shape)
 
             # Sum across all layers
             if cam_sum is None:
@@ -239,8 +238,6 @@ class AttentionGuidedCAMJanus(AttentionGuidedCAM):
             cam_sum = None
             for act, grad in zip(self.activations, self.gradients):
                 # act = torch.sigmoid(act)
-                print("act:", act)
-                print(len(act))
                 print("act_shape:", act.shape)
                 # print("act1_shape:", act[1].shape)
                 
@@ -248,14 +245,9 @@ class AttentionGuidedCAMJanus(AttentionGuidedCAM):
     
 
                 # Compute mean of gradients
-                print("grad:", grad)
-                print(len(grad))
                 print("grad_shape:", grad.shape)
                 grad_weights = grad.mean(dim=1)
 
-                print("act:", act)
-                print("act shape", act.shape)
-                print("grad_weights shape", grad_weights.shape)
 
                 # cam, _ = (act * grad_weights).max(dim=-1)
                 # cam = act * grad_weights
@@ -361,23 +353,15 @@ class AttentionGuidedCAMLLaVA(AttentionGuidedCAM):
             cam_sum = None
             for act, grad in zip(self.activations, self.gradients):
                 # act = torch.sigmoid(act)
-                print("act:", act)
-                print(len(act))
                 print("act_shape:", act.shape)
-                # print("act1_shape:", act[1].shape)
                 
                 act = F.relu(act.mean(dim=1))
     
 
                 # Compute mean of gradients
-                print("grad:", grad)
-                print(len(grad))
                 print("grad_shape:", grad.shape)
                 grad_weights = grad.mean(dim=1)
 
-                print("act:", act)
-                print("act shape", act.shape)
-                print("grad_weights shape", grad_weights.shape)
 
                 # cam, _ = (act * grad_weights).max(dim=-1)
                 # cam = act * grad_weights
@@ -477,23 +461,6 @@ class AttentionGuidedCAMChartGemma(AttentionGuidedCAM):
         # Forward pass
         outputs_raw = self.model(**inputs)
 
-        image_embeddings = outputs_raw.image_hidden_states
-        inputs_embeddings = self.model.get_input_embeddings()(inputs['input_ids'])
-
-        # Pooling
-        image_embeddings_pooled = image_embeddings.mean(dim=1)
-
-        inputs_embeddings_pooled = inputs_embeddings.mean(dim=1) # end of image: 618
-        # inputs_embeddings_pooled = inputs_embeddings[
-        #     torch.arange(inputs_embeddings.shape[0], device=inputs_embeddings.device),
-        #     input_ids.to(dtype=torch.int, device=inputs_embeddings.device).argmax(dim=-1),
-        # ]
-
-
-        # Backpropagate to get gradients
-        # image_embeddings_pooled.backward(inputs_embeddings_pooled, retain_graph=True)
-        # similarity = F.cosine_similarity(image_embeddings_mean, inputs_embeddings_mean, dim=-1)
-        # similarity.backward()
         self.model.zero_grad()
         print(outputs_raw)
         # loss = self.target_layers[-1].attention_map.sum()
@@ -505,7 +472,6 @@ class AttentionGuidedCAMChartGemma(AttentionGuidedCAM):
         last = 0
         for i in range(inputs["input_ids"].shape[1]):
             decoded_token = tokenizer.decode(inputs["input_ids"][0][i].item())
-            print(decoded_token)
             if (decoded_token == "<image>"):
                 image_mask.append(True)
                 last = i
