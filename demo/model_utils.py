@@ -2,7 +2,7 @@ import torch
 import numpy as np
 import spaces
 from PIL import Image, ImageDraw, ImageFont
-from transformers import AutoConfig, AutoModelForCausalLM, LlavaForConditionalGeneration, AutoProcessor
+from transformers import AutoConfig, AutoModelForCausalLM, LlavaForConditionalGeneration, AutoProcessor, PaliGemmaForConditionalGeneration
 from transformers import CLIPProcessor, CLIPModel
 from janus.models import MultiModalityCausalLM, VLChatProcessor
 
@@ -170,6 +170,61 @@ class LLaVA_Utils(Model_Utils):
         )
 
         return outputs
+    
+
+
+
+
+class ChartGemma_Utils(Model_Utils):
+    def __init__(self):
+        super().__init__()
+
+    def init_ChartGemma(self):
+
+        model_path = "ahmed-masry/chartgemma"
+        
+
+        self.vl_gpt = PaliGemmaForConditionalGeneration.from_pretrained(
+            model_path, 
+            torch_dtype=torch.float16,  
+            attn_implementation="eager", 
+            output_attentions=True
+        )
+        self.vl_gpt, self.dtype, self.cuda_device = set_dtype_device(self.vl_gpt)
+        self.processor = AutoProcessor.from_pretrained(model_path)
+        self.tokenizer = self.processor.tokenizer
+        
+        return self.vl_gpt, self.tokenizer
+    
+    @spaces.GPU(duration=120)
+    def prepare_inputs(self, question, image):
+
+        pil_image = Image.fromarray(image)
+        prepare_inputs = self.processor(
+            images=pil_image, text=[question], return_tensors="pt"
+        ).to(self.cuda_device, dtype=self.dtype)
+
+        return prepare_inputs
+    
+    @spaces.GPU(duration=120)
+    def generate_inputs_embeddings(self, prepare_inputs):
+        return self.vl_gpt.prepare_inputs_embeds(**prepare_inputs)
+    
+    @spaces.GPU(duration=120)
+    def generate_outputs(self, prepare_inputs, temperature, top_p):
+        
+        outputs = self.vl_gpt.generate(
+            **prepare_inputs,
+            max_new_tokens=512,
+            do_sample=False if temperature == 0 else True,
+            use_cache=True,
+            return_dict_in_generate=True,
+            output_attentions=True
+        )
+
+        return outputs
+
+
 
 
 def add_title_to_image(image, title, font_size=20):

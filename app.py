@@ -3,8 +3,8 @@ import torch
 from transformers import AutoConfig, AutoModelForCausalLM
 from janus.models import MultiModalityCausalLM, VLChatProcessor
 from janus.utils.io import load_pil_images
-from demo.cam import generate_gradcam, AttentionGuidedCAMJanus, AttentionGuidedCAMClip, AttentionGuidedCAMLLaVA
-from demo.model_utils import Clip_Utils, Janus_Utils, LLaVA_Utils, add_title_to_image
+from demo.cam import generate_gradcam, AttentionGuidedCAMJanus, AttentionGuidedCAMClip, AttentionGuidedCAMChartGemma, AttentionGuidedCAMLLaVA
+from demo.model_utils import Clip_Utils, Janus_Utils, LLaVA_Utils, ChartGemma_Utils, add_title_to_image
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -22,7 +22,8 @@ clip_utils = Clip_Utils()
 clip_utils.init_Clip()
 model_utils, vl_gpt, tokenizer = None, None, None
 model_name = "Clip"
-
+language_model_max_layer = 24
+language_model_best_layer = 8
 
 def clean():
     global model_utils, vl_gpt, tokenizer, clip_utils
@@ -109,7 +110,12 @@ def multimodal_understanding(model_type,
 
         input_ids = prepare_inputs.input_ids[0].cpu().tolist()
         input_ids_decoded = [tokenizer.decode([input_ids[i]]) for i in range(len(input_ids))]
-        start=620 if model_name.split('-')[0] == "Janus" else 512
+        if model_name.split('-')[0] == "Janus":
+            start = 620 
+        elif model_name.split('-')[0] == "ChartGemma":
+            start = 1024
+        else: 
+            start = 512
 
         if saliency_map_method == "GradCAM":
             # target_layers = vl_gpt.vision_model.vision_tower.blocks
@@ -127,8 +133,13 @@ def multimodal_understanding(model_type,
                 gradcam = AttentionGuidedCAMJanus(vl_gpt, target_layers)
             elif model_name.split('-')[0] == "LLaVA":
                 gradcam = AttentionGuidedCAMLLaVA(vl_gpt, target_layers)
+            elif model_name.split('-')[0] == "ChartGemma":
+                gradcam = AttentionGuidedCAMChartGemma(vl_gpt, target_layers)
+
             cam_tensors, grid_size = gradcam.generate_cam(prepare_inputs, tokenizer, temperature, top_p, target_token_idx, visual_pooling_method, focus)
             gradcam.remove_hooks()
+
+            
             if focus == "Visual Encoder":
                 cam_grid = cam_tensors.reshape(grid_size, grid_size)
                 cam = [generate_gradcam(cam_grid, image)]
@@ -144,7 +155,7 @@ def multimodal_understanding(model_type,
                 else:
                     cam = []
                     for i, cam_tensor in enumerate(cam_tensors):
-                        cam_grid = cam_tensor.reshape(24, 24)
+                        cam_grid = cam_tensor.reshape(grid_size, grid_size)
                         cam_i = generate_gradcam(cam_grid, image)
                         cam_i = add_title_to_image(cam_i, input_ids_decoded[start + i])
 
@@ -158,7 +169,7 @@ def multimodal_understanding(model_type,
 # Gradio interface
 
 def model_slider_change(model_type):
-    global model_utils, vl_gpt, tokenizer, clip_utils, model_name
+    global model_utils, vl_gpt, tokenizer, clip_utils, model_name, language_model_max_layer, language_model_best_layer
     model_name = model_type
     if model_type == "Clip":
         clean()
@@ -179,6 +190,8 @@ def model_slider_change(model_type):
         set_seed()
         model_utils = Janus_Utils()
         vl_gpt, tokenizer = model_utils.init_Janus(model_type.split('-')[-1])
+        language_model_max_layer = 24
+        language_model_best_layer = 8
 
         res = (
             gr.Dropdown(choices=["Visualization only", "answer + visualization"], value="Visualization only", label="response_type"),
@@ -195,6 +208,8 @@ def model_slider_change(model_type):
         set_seed()
         model_utils = LLaVA_Utils()
         vl_gpt, tokenizer = model_utils.init_LLaVA()
+        language_model_max_layer = 24
+        language_model_best_layer = 8
 
         res = (
             gr.Dropdown(choices=["Visualization only", "answer + visualization"], value="Visualization only", label="response_type"),
@@ -204,9 +219,29 @@ def model_slider_change(model_type):
             gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="saliency map type")
         )
         return res
+    
+    elif model_type.split('-')[0] == "ChartGemma":
+        clean()
+        set_seed()
+        model_utils = ChartGemma_Utils()
+        vl_gpt, tokenizer = model_utils.init_ChartGemma()
+        language_model_max_layer = 18
+        language_model_best_layer = 12
+
+        res = (
+            gr.Dropdown(choices=["Visualization only", "answer + visualization"], value="Visualization only", label="response_type"),
+            gr.Slider(minimum=1, maximum=18, value=12, step=1, label="visualization layers min"),
+            gr.Slider(minimum=1, maximum=18, value=12, step=1, label="visualization layers max"),
+            gr.Dropdown(choices=["Language Model"], value="Language Model", label="focus"),
+            gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="saliency map type")
+        )
+        return res
+
+    
+
 
 def focus_change(focus):
-    global model_name
+    global model_name, language_model_max_layer
     if model_name == "Clip":
         res = (
                 gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="saliency map type"),
@@ -219,15 +254,15 @@ def focus_change(focus):
         if response_type.value == "answer + visualization":
             res = (
                 gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="saliency map type"),
-                gr.Slider(minimum=1, maximum=24, value=8, step=1, label="visualization layers min"), 
-                gr.Slider(minimum=1, maximum=24, value=8, step=1, label="visualization layers max")
+                gr.Slider(minimum=1, maximum=language_model_max_layer, value=language_model_best_layer, step=1, label="visualization layers min"), 
+                gr.Slider(minimum=1, maximum=language_model_max_layer, value=language_model_best_layer, step=1, label="visualization layers max")
             )
             return res
         else:
             res = (
                 gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="saliency map type"),
-                gr.Slider(minimum=1, maximum=24, value=8, step=1, label="visualization layers min"), 
-                gr.Slider(minimum=1, maximum=24, value=8, step=1, label="visualization layers max")
+                gr.Slider(minimum=1, maximum=language_model_max_layer, value=language_model_best_layer, step=1, label="visualization layers min"), 
+                gr.Slider(minimum=1, maximum=language_model_max_layer, value=language_model_best_layer, step=1, label="visualization layers max")
             )
             return res
 
@@ -251,7 +286,7 @@ with gr.Blocks() as demo:
             saliency_map_output = gr.Gallery(label="Saliency Map", height=300, columns=1)
 
         with gr.Column():
-            model_selector = gr.Dropdown(choices=["Clip", "Janus-1B", "Janus-7B", "LLaVA-1.5-7B"], value="Clip", label="model")
+            model_selector = gr.Dropdown(choices=["Clip", "ChartGemma-2B", "Janus-1B", "Janus-7B", "LLaVA-1.5-7B"], value="Clip", label="model")
             response_type = gr.Dropdown(choices=["Visualization only"], value="Visualization only", label="response_type")
             focus = gr.Dropdown(choices=["Visual Encoder"], value="Visual Encoder", label="focus")
             saliency_map_method = gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="saliency map type")
