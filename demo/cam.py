@@ -335,80 +335,91 @@ class AttentionGuidedCAMLLaVA(AttentionGuidedCAM):
                 self.hooks.append(layer.register_forward_hook(self._forward_activate_hooks))
 
     @spaces.GPU(duration=120)
-    def generate_cam(self, input_tensor, tokenizer, temperature, top_p, class_idx=None, visual_pooling_method="CLS", focus="Visual Encoder"):
+    def generate_cam(self, inputs, tokenizer, temperature, top_p, class_idx=None, visual_pooling_method="CLS", focus="Visual Encoder"):
         """ Generates Grad-CAM heatmap for ViT. """
         
-        
         # Forward pass
-        outputs_raw = self.model(**input_tensor)
+        outputs_raw = self.model(**inputs)
 
-        if focus == "Language Model":
-            loss = self.target_layers[-1].attention_map.sum()
-            self.model.zero_grad()
-            loss.backward()
+        self.model.zero_grad()
+        print(outputs_raw)
+        # loss = self.target_layers[-1].attention_map.sum()
+        loss = outputs_raw.logits.max(dim=-1).values.sum()
+        loss.backward()
+
+        # get image masks
+        image_mask = []
+        last = 0
+        for i in range(inputs["input_ids"].shape[1]):
+            decoded_token = tokenizer.decode(inputs["input_ids"][0][i].item())
+            if (decoded_token == "<image>"):
+                image_mask.append(True)
+                last = i
+            else:
+                image_mask.append(False)
+
+
+        # Aggregate activations and gradients from ALL layers
+        self.activations = [layer.get_attn_map() for layer in self.target_layers]
+        self.gradients = [layer.get_attn_gradients() for layer in self.target_layers]
+        cam_sum = None
+
+        # Ver 2
+        for act, grad in zip(self.activations, self.gradients):
+
+            print("act shape", act.shape)
+            print("grad shape", grad.shape)
+
+            act = F.relu(act)
+            grad = F.relu(grad)
+
+
+            cam = act * grad # shape: [1, heads, seq_len, seq_len]
+            cam = cam.sum(dim=1) # shape: [1, seq_len, seq_len]
+
+            # Sum across all layers
+            if cam_sum is None:
+                cam_sum = cam
+            else:
+                cam_sum += cam 
+
+        cam_sum = F.relu(cam_sum)
+        cam_sum = cam_sum.to(torch.float32)
+
+        # thresholding
+        # percentile = torch.quantile(cam_sum, 0.4)  # Adjust threshold dynamically
+        # cam_sum[cam_sum < percentile] = 0
+
+        # Reshape
+        # if visual_pooling_method == "CLS":
+        # cam_sum = cam_sum[0, 1:]
+
+        # cam_sum shape: [1, seq_len, seq_len]
+        cam_sum_lst = []
+        cam_sum_raw = cam_sum
+        start_idx = last + 1
+        for i in range(start_idx, cam_sum_raw.shape[1]):
+            cam_sum = cam_sum_raw[0, i, :] # shape: [1: seq_len]
+            # cam_sum_min = cam_sum.min()
+            # cam_sum_max = cam_sum.max()
+            # cam_sum = (cam_sum - cam_sum_min) / (cam_sum_max - cam_sum_min)
+            cam_sum = cam_sum[image_mask].unsqueeze(0) # shape: [1, 1024]
+            print("cam_sum shape: ", cam_sum.shape)
+            num_patches = cam_sum.shape[-1]  # Last dimension of CAM output
+            grid_size = int(num_patches ** 0.5)
+            print(f"Detected grid size: {grid_size}x{grid_size}")
+
+            # Fix the reshaping step dynamically
             
-            self.activations = [layer.get_attn_map() for layer in self.target_layers]
-            self.gradients = [layer.get_attn_gradients() for layer in self.target_layers]
-
-            cam_sum = None
-            for act, grad in zip(self.activations, self.gradients):
-                # act = torch.sigmoid(act)
-                print("act_shape:", act.shape)
-                
-                act = F.relu(act.mean(dim=1))
-    
-
-                # Compute mean of gradients
-                print("grad_shape:", grad.shape)
-                grad_weights = grad.mean(dim=1)
+            cam_sum = cam_sum.view(grid_size, grid_size)
+            cam_sum = (cam_sum - cam_sum.min()) / (cam_sum.max() - cam_sum.min())
+            cam_sum_lst.append(cam_sum)
 
 
-                # cam, _ = (act * grad_weights).max(dim=-1)
-                # cam = act * grad_weights
-                cam = act * grad_weights
-                print(cam.shape)
-
-                # Sum across all layers
-                if cam_sum is None:
-                    cam_sum = cam
-                else:
-                    cam_sum += cam  
-
-            # Normalize
-            cam_sum = F.relu(cam_sum)
-            # cam_sum = cam_sum - cam_sum.min()
-            # cam_sum = cam_sum / cam_sum.max()
-
-            # thresholding
-            cam_sum = cam_sum.to(torch.float32)
-            percentile = torch.quantile(cam_sum, 0.2)  # Adjust threshold dynamically
-            cam_sum[cam_sum < percentile] = 0
-
-            # Reshape
-            # if visual_pooling_method == "CLS":
-            # cam_sum = cam_sum[0, 1:]
-
-            # cam_sum shape: [1, seq_len, seq_len]
-            cam_sum_lst = []
-            cam_sum_raw = cam_sum
-            grid_size = 32
-            for i in range(512, cam_sum_raw.shape[1]):
-                cam_sum = cam_sum_raw[:, i, :] # shape: [1: seq_len]
-                cam_sum = cam_sum[input_tensor.images_seq_mask].unsqueeze(0) # shape: [1, 576]
-                print("cam_sum shape: ", cam_sum.shape)
-                num_patches = cam_sum.shape[-1]  # Last dimension of CAM output
-                grid_size = int(num_patches ** 0.5)
-                print(f"Detected grid size: {grid_size}x{grid_size}")
-
-                # Fix the reshaping step dynamically
-                
-                cam_sum = cam_sum.view(grid_size, grid_size)
-                cam_sum = (cam_sum - cam_sum.min()) / (cam_sum.max() - cam_sum.min())
-                cam_sum = cam_sum.detach().to("cpu")
-                cam_sum_lst.append(cam_sum)
+        return cam_sum_lst, grid_size
 
 
-            return cam_sum_lst, grid_size
+
 
 
 
@@ -546,7 +557,7 @@ class AttentionGuidedCAMChartGemma(AttentionGuidedCAM):
         # cam_sum shape: [1, seq_len, seq_len]
         cam_sum_lst = []
         cam_sum_raw = cam_sum
-        start_idx = 1024
+        start_idx = last + 1
         for i in range(start_idx, cam_sum_raw.shape[1]):
             cam_sum = cam_sum_raw[0, i, :] # shape: [1: seq_len]
             # cam_sum_min = cam_sum.min()
