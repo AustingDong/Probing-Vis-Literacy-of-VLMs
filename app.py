@@ -208,13 +208,13 @@ def model_slider_change(model_type):
         set_seed()
         model_utils = LLaVA_Utils()
         vl_gpt, tokenizer = model_utils.init_LLaVA()
-        language_model_max_layer = 24
-        language_model_best_layer = 8
+        language_model_max_layer = 32
+        language_model_best_layer = 24
 
         res = (
             gr.Dropdown(choices=["Visualization only", "answer + visualization"], value="Visualization only", label="response_type"),
-            gr.Slider(minimum=1, maximum=24, value=24, step=1, label="visualization layers min"),
-            gr.Slider(minimum=1, maximum=24, value=24, step=1, label="visualization layers max"),
+            gr.Slider(minimum=1, maximum=32, value=24, step=1, label="visualization layers min"),
+            gr.Slider(minimum=1, maximum=32, value=24, step=1, label="visualization layers max"),
             gr.Dropdown(choices=["Language Model"], value="Language Model", label="focus"),
             gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="saliency map type")
         )

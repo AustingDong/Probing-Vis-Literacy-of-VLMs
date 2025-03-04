@@ -2,7 +2,7 @@ import torch
 import numpy as np
 import spaces
 from PIL import Image, ImageDraw, ImageFont
-from transformers import AutoConfig, AutoModelForCausalLM, LlavaForConditionalGeneration, AutoProcessor, PaliGemmaForConditionalGeneration
+from transformers import AutoConfig, AutoModelForCausalLM, LlavaForConditionalGeneration, LlavaNextForConditionalGeneration, LlavaNextProcessor, AutoProcessor, PaliGemmaForConditionalGeneration
 from transformers import CLIPProcessor, CLIPModel
 from janus.models import MultiModalityCausalLM, VLChatProcessor
 
@@ -123,13 +123,13 @@ class LLaVA_Utils(Model_Utils):
         model_path = "llava-hf/llava-v1.6-mistral-7b-hf"
         config = AutoConfig.from_pretrained(model_path)
 
-        self.vl_gpt = LlavaForConditionalGeneration.from_pretrained(model_path,
+        self.vl_gpt = LlavaNextForConditionalGeneration.from_pretrained(model_path,
                                                     low_cpu_mem_usage=True,
                                                     attn_implementation = 'eager',
                                                     output_attentions=True
                                                     )
         self.vl_gpt, self.dtype, self.cuda_device = set_dtype_device(self.vl_gpt)
-        self.processor = AutoProcessor.from_pretrained(model_path)
+        self.processor = LlavaNextProcessor.from_pretrained(model_path)
         self.tokenizer = self.processor.tokenizer
         
         return self.vl_gpt, self.tokenizer
