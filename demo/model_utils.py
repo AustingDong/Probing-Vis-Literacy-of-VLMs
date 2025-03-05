@@ -45,7 +45,7 @@ class Clip_Utils(Model_Utils):
     @spaces.GPU(duration=120)
     def prepare_inputs(self, question_lst, image):
         image = Image.fromarray(image)
-        print("image_size: ", image.size)
+        # print("image_size: ", image.size)
         inputs = self.processor(text=question_lst, images=image, return_tensors="pt", padding=True)
         return inputs
         
@@ -228,7 +228,7 @@ class ChartGemma_Utils(Model_Utils):
 
 
 
-def add_title_to_image(image, title, font_size=20):
+def add_title_to_image(image, title, font_size=50):
     """Adds a title above an image using PIL and textbbox()."""
     img_width, img_height = image.size
 

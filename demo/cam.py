@@ -11,12 +11,13 @@ from demo.modify_llama import *
 
 
 class AttentionGuidedCAM:
-    def __init__(self, model):
+    def __init__(self, model, register=True):
         self.model = model
         self.gradients = []
         self.activations = []
         self.hooks = []
-        self._register_hooks()
+        if register:
+            self._register_hooks()
 
     def _register_hooks(self):
         """ Registers hooks to extract activations and gradients from ALL attention layers. """
@@ -309,7 +310,7 @@ class AttentionGuidedCAMJanus(AttentionGuidedCAM):
 class AttentionGuidedCAMLLaVA(AttentionGuidedCAM):
     def __init__(self, model, target_layers):
         self.target_layers = target_layers
-        super().__init__(model)
+        super().__init__(model, register=False)
         self._modify_layers()
         self._register_hooks_activations()
 
@@ -439,7 +440,7 @@ class AttentionGuidedCAMLLaVA(AttentionGuidedCAM):
 class AttentionGuidedCAMChartGemma(AttentionGuidedCAM):
     def __init__(self, model, target_layers):
         self.target_layers = target_layers
-        super().__init__(model)
+        super().__init__(model, register=False)
         self._modify_layers()
         self._register_hooks_activations()
     
@@ -473,7 +474,7 @@ class AttentionGuidedCAMChartGemma(AttentionGuidedCAM):
         outputs_raw = self.model(**inputs)
 
         self.model.zero_grad()
-        print(outputs_raw)
+        # print(outputs_raw)
         # loss = self.target_layers[-1].attention_map.sum()
         loss = outputs_raw.logits.max(dim=-1).values.sum()
         loss.backward()
@@ -616,7 +617,7 @@ def generate_gradcam(
     Returns:
       PIL.Image: The image overlaid with the Grad-CAM heatmap.
     """
-    print("Generating Grad-CAM with shape:", cam.shape)
+    # print("Generating Grad-CAM with shape:", cam.shape)
 
     if normalize:
         cam_min, cam_max = cam.min(), cam.max()

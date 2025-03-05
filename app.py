@@ -286,7 +286,7 @@ with gr.Blocks() as demo:
             saliency_map_output = gr.Gallery(label="Saliency Map", height=300, columns=1)
 
         with gr.Column():
-            model_selector = gr.Dropdown(choices=["Clip", "ChartGemma-2B", "Janus-1B", "Janus-7B", "LLaVA-1.5-7B"], value="Clip", label="model")
+            model_selector = gr.Dropdown(choices=["Clip", "ChartGemma-2B", "Janus-1B", "Janus-7B", "LLaVA-v1.6-Mistral-7B"], value="Clip", label="model")
             response_type = gr.Dropdown(choices=["Visualization only"], value="Visualization only", label="response_type")
             focus = gr.Dropdown(choices=["Visual Encoder"], value="Visual Encoder", label="focus")
             saliency_map_method = gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="saliency map type")
