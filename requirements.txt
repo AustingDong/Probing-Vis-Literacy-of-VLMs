@@ -8,7 +8,7 @@ attrdict
 einops
 opencv-python
 matplotlib
-pillow>=10.0.0
+pillow>=11.0.0
 
 # for gradio demo
 # gradio==3.48.0
