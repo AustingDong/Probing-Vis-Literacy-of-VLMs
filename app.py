@@ -286,7 +286,7 @@ with gr.Blocks() as demo:
             activation_map_output = gr.Gallery(label="activation Map", height=300, columns=1)
 
         with gr.Column():
-            model_selector = gr.Dropdown(choices=["Clip", "ChartGemma-3B", "Janus-1B", "Janus-7B", "LLaVA-v1.6-Mistral-7B"], value="Clip", label="model")
+            model_selector = gr.Dropdown(choices=["Clip", "ChartGemma-3B", "Janus-1B", "Janus-7B", "LLaVA-v1.6-7B"], value="Clip", label="model")
             response_type = gr.Dropdown(choices=["Visualization only"], value="Visualization only", label="response_type")
             focus = gr.Dropdown(choices=["Visual Encoder"], value="Visual Encoder", label="focus")
             activation_map_method = gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="activation map type")

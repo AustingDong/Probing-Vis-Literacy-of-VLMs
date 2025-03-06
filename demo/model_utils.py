@@ -120,7 +120,7 @@ class LLaVA_Utils(Model_Utils):
     def init_LLaVA(self):
 
         # model_path = "llava-hf/llava-1.5-7b-hf"
-        model_path = "llava-hf/llava-v1.6-mistral-7b-hf"
+        model_path = "llava-hf/llava-v1.6-vicuna-7b-hf"
         config = AutoConfig.from_pretrained(model_path)
 
         self.vl_gpt = LlavaNextForConditionalGeneration.from_pretrained(model_path,
@@ -138,11 +138,10 @@ class LLaVA_Utils(Model_Utils):
     def prepare_inputs(self, question, image):
         conversation = [
             {
-
-            "role": "user",
-            "content": [
-                {"type": "text", "text": question},
-                {"type": "image"},
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": question},
+                    {"type": "image"},
                 ],
             },
         ]
