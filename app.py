@@ -209,7 +209,7 @@ def model_slider_change(model_type):
         model_utils = LLaVA_Utils()
         vl_gpt, tokenizer = model_utils.init_LLaVA()
         language_model_max_layer = 32
-        language_model_best_layer = 24
+        language_model_best_layer = 10
 
         res = (
             gr.Dropdown(choices=["Visualization only", "answer + visualization"], value="Visualization only", label="response_type"),
