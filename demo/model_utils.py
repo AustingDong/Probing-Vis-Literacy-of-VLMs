@@ -241,7 +241,8 @@ def add_title_to_image(image, title, font_size=50):
     try:
         font = ImageFont.truetype("arial.ttf", font_size)  # Use Arial if available
     except:
-        font = ImageFont.load_default()  # Use default if Arial not found
+        print("font arial not found")
+        font = ImageFont.load_default(font_size)  # Use default if Arial not found
 
     # Get text size (updated for PIL >= 10)
     text_bbox = draw.textbbox((0, 0), title, font=font)
