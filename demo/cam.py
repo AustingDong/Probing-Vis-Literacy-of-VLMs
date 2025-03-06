@@ -186,6 +186,7 @@ class AttentionGuidedCAMJanus(AttentionGuidedCAM):
     
 
                 # Compute mean of gradients
+                print("grad shape:", grad.shape)
                 grad_weights = grad.mean(dim=-1, keepdim=True)
 
                 print("act shape", act.shape)
@@ -242,12 +243,12 @@ class AttentionGuidedCAMJanus(AttentionGuidedCAM):
                 print("act_shape:", act.shape)
                 # print("act1_shape:", act[1].shape)
                 
-                act = F.relu(act.mean(dim=1))
+                act = act.mean(dim=1)
     
 
                 # Compute mean of gradients
                 print("grad_shape:", grad.shape)
-                grad_weights = grad.mean(dim=1)
+                grad_weights = F.relu(grad.mean(dim=1))
 
 
                 # cam, _ = (act * grad_weights).max(dim=-1)
@@ -371,7 +372,6 @@ class AttentionGuidedCAMLLaVA(AttentionGuidedCAM):
             print("act shape", act.shape)
             print("grad shape", grad.shape)
 
-            act = F.relu(act)
             grad = F.relu(grad)
 
 
@@ -475,8 +475,8 @@ class AttentionGuidedCAMChartGemma(AttentionGuidedCAM):
 
         self.model.zero_grad()
         # print(outputs_raw)
-        # loss = self.target_layers[-1].attention_map.sum()
         loss = outputs_raw.logits.max(dim=-1).values.sum()
+
         loss.backward()
 
         # get image masks
@@ -531,9 +531,7 @@ class AttentionGuidedCAMChartGemma(AttentionGuidedCAM):
             print("act shape", act.shape)
             print("grad shape", grad.shape)
 
-            act = F.relu(act)
             grad = F.relu(grad)
-
 
             cam = act * grad # shape: [1, heads, seq_len, seq_len]
             cam = cam.sum(dim=1) # shape: [1, seq_len, seq_len]
