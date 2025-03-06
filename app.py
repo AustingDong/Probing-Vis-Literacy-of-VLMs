@@ -114,8 +114,8 @@ def multimodal_understanding(model_type,
             start = 620 
         elif model_name.split('-')[0] == "ChartGemma":
             start = 1024
-        else: 
-            start = 512
+        elif model_name.split('-')[0] == "LLaVA": 
+            start = 581
 
         if activation_map_method == "GradCAM":
             # target_layers = vl_gpt.vision_model.vision_tower.blocks
@@ -286,7 +286,7 @@ with gr.Blocks() as demo:
             activation_map_output = gr.Gallery(label="activation Map", height=300, columns=1)
 
         with gr.Column():
-            model_selector = gr.Dropdown(choices=["Clip", "ChartGemma-3B", "Janus-1B", "Janus-7B", "LLaVA-v1.6-7B"], value="Clip", label="model")
+            model_selector = gr.Dropdown(choices=["Clip", "ChartGemma-3B", "Janus-1B", "Janus-7B", "LLaVA-1.5-7B"], value="Clip", label="model")
             response_type = gr.Dropdown(choices=["Visualization only"], value="Visualization only", label="response_type")
             focus = gr.Dropdown(choices=["Visual Encoder"], value="Visual Encoder", label="focus")
             activation_map_method = gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="activation map type")
