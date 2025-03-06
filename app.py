@@ -50,7 +50,7 @@ def clean():
 # Multimodal Understanding function
 @spaces.GPU(duration=120)
 def multimodal_understanding(model_type, 
-                             saliency_map_method, 
+                             activation_map_method, 
                              visual_pooling_method, 
                              image, question, seed, top_p, temperature, target_token_idx,
                              visualization_layer_min, visualization_layer_max, focus, response_type):
@@ -72,7 +72,7 @@ def multimodal_understanding(model_type,
         inputs = clip_utils.prepare_inputs([question], image)
 
 
-        if saliency_map_method == "GradCAM":
+        if activation_map_method == "GradCAM":
             # Generate Grad-CAM
             all_layers = [layer.layer_norm1 for layer in clip_utils.model.vision_model.encoder.layers]
             if visualization_layers_min.value != visualization_layers_max.value:
@@ -117,7 +117,7 @@ def multimodal_understanding(model_type,
         else: 
             start = 512
 
-        if saliency_map_method == "GradCAM":
+        if activation_map_method == "GradCAM":
             # target_layers = vl_gpt.vision_model.vision_tower.blocks
             if focus == "Visual Encoder":
                 all_layers = [block.norm1 for block in vl_gpt.vision_model.vision_tower.blocks]
@@ -181,7 +181,7 @@ def model_slider_change(model_type):
             gr.Slider(minimum=1, maximum=12, value=12, step=1, label="visualization layers min"),
             gr.Slider(minimum=1, maximum=12, value=12, step=1, label="visualization layers max"),
             gr.Dropdown(choices=["Visual Encoder"], value="Visual Encoder", label="focus"),
-            gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="saliency map type")
+            gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="activation map type")
         )
         return res
     elif model_type.split('-')[0] == "Janus":
@@ -198,7 +198,7 @@ def model_slider_change(model_type):
             gr.Slider(minimum=1, maximum=24, value=24, step=1, label="visualization layers min"),
             gr.Slider(minimum=1, maximum=24, value=24, step=1, label="visualization layers max"),
             gr.Dropdown(choices=["Visual Encoder", "Language Model"], value="Visual Encoder", label="focus"),
-            gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="saliency map type")
+            gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="activation map type")
         )
         return res
     
@@ -216,7 +216,7 @@ def model_slider_change(model_type):
             gr.Slider(minimum=1, maximum=32, value=24, step=1, label="visualization layers min"),
             gr.Slider(minimum=1, maximum=32, value=24, step=1, label="visualization layers max"),
             gr.Dropdown(choices=["Language Model"], value="Language Model", label="focus"),
-            gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="saliency map type")
+            gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="activation map type")
         )
         return res
     
@@ -233,7 +233,7 @@ def model_slider_change(model_type):
             gr.Slider(minimum=1, maximum=18, value=15, step=1, label="visualization layers min"),
             gr.Slider(minimum=1, maximum=18, value=15, step=1, label="visualization layers max"),
             gr.Dropdown(choices=["Language Model"], value="Language Model", label="focus"),
-            gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="saliency map type")
+            gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="activation map type")
         )
         return res
 
@@ -244,7 +244,7 @@ def focus_change(focus):
     global model_name, language_model_max_layer
     if model_name == "Clip":
         res = (
-                gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="saliency map type"),
+                gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="activation map type"),
                 gr.Slider(minimum=1, maximum=12, value=12, step=1, label="visualization layers min"), 
                 gr.Slider(minimum=1, maximum=12, value=12, step=1, label="visualization layers max")
             )
@@ -253,14 +253,14 @@ def focus_change(focus):
     if focus == "Language Model":
         if response_type.value == "answer + visualization":
             res = (
-                gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="saliency map type"),
+                gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="activation map type"),
                 gr.Slider(minimum=1, maximum=language_model_max_layer, value=language_model_best_layer, step=1, label="visualization layers min"), 
                 gr.Slider(minimum=1, maximum=language_model_max_layer, value=language_model_best_layer, step=1, label="visualization layers max")
             )
             return res
         else:
             res = (
-                gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="saliency map type"),
+                gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="activation map type"),
                 gr.Slider(minimum=1, maximum=language_model_max_layer, value=language_model_best_layer, step=1, label="visualization layers min"), 
                 gr.Slider(minimum=1, maximum=language_model_max_layer, value=language_model_best_layer, step=1, label="visualization layers max")
             )
@@ -268,7 +268,7 @@ def focus_change(focus):
 
     else:
         res = (
-            gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="saliency map type"),
+            gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="activation map type"),
             gr.Slider(minimum=1, maximum=24, value=24, step=1, label="visualization layers min"), 
             gr.Slider(minimum=1, maximum=24, value=24, step=1, label="visualization layers max")
         )
@@ -283,13 +283,13 @@ with gr.Blocks() as demo:
     with gr.Row():
         with gr.Column():
             image_input = gr.Image()
-            saliency_map_output = gr.Gallery(label="Saliency Map", height=300, columns=1)
+            activation_map_output = gr.Gallery(label="activation Map", height=300, columns=1)
 
         with gr.Column():
             model_selector = gr.Dropdown(choices=["Clip", "ChartGemma-3B", "Janus-1B", "Janus-7B", "LLaVA-v1.6-Mistral-7B"], value="Clip", label="model")
             response_type = gr.Dropdown(choices=["Visualization only"], value="Visualization only", label="response_type")
             focus = gr.Dropdown(choices=["Visual Encoder"], value="Visual Encoder", label="focus")
-            saliency_map_method = gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="saliency map type")
+            activation_map_method = gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="activation map type")
             visual_pooling_method = gr.Dropdown(choices=["CLS", "max", "avg"], value="CLS", label="visual pooling method")
             
 
@@ -312,7 +312,7 @@ with gr.Blocks() as demo:
                 visualization_layers_min,
                 visualization_layers_max,
                 focus,
-                saliency_map_method
+                activation_map_method
             ]
         )
         
@@ -320,7 +320,7 @@ with gr.Blocks() as demo:
             fn = focus_change,
             inputs = focus,
             outputs=[
-                saliency_map_method,
+                activation_map_method,
                 visualization_layers_min,
                 visualization_layers_max,
             ]
@@ -329,7 +329,7 @@ with gr.Blocks() as demo:
         # response_type.change(
         #     fn = response_type_change,
         #     inputs = response_type,
-        #     outputs = [saliency_map_method]
+        #     outputs = [activation_map_method]
         # )
 
         
@@ -424,9 +424,9 @@ with gr.Blocks() as demo:
         
     understanding_button.click(
         multimodal_understanding,
-        inputs=[model_selector, saliency_map_method, visual_pooling_method, image_input, question_input, und_seed_input, top_p, temperature, target_token_idx, 
+        inputs=[model_selector, activation_map_method, visual_pooling_method, image_input, question_input, und_seed_input, top_p, temperature, target_token_idx, 
                 visualization_layers_min, visualization_layers_max, focus, response_type],
-        outputs=[understanding_output, saliency_map_output, understanding_target_token_decoded_output]
+        outputs=[understanding_output, activation_map_output, understanding_target_token_decoded_output]
     )
     
 demo.launch(share=True)
