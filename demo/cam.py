@@ -344,8 +344,7 @@ class AttentionGuidedCAMLLaVA(AttentionGuidedCAM):
         outputs_raw = self.model(**inputs)
 
         self.model.zero_grad()
-        print(outputs_raw)
-        # loss = self.target_layers[-1].attention_map.sum()
+        print("output_raw", outputs_raw)
         loss = outputs_raw.logits.max(dim=-1).values.sum()
         loss.backward()
 
