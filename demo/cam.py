@@ -20,22 +20,18 @@ class AttentionGuidedCAM:
             self._register_hooks()
 
     def _register_hooks(self):
-        """ Registers hooks to extract activations and gradients from ALL attention layers. """
         for layer in self.target_layers:
             self.hooks.append(layer.register_forward_hook(self._forward_hook))
             self.hooks.append(layer.register_backward_hook(self._backward_hook))
 
     def _forward_hook(self, module, input, output):
-        """ Stores attention maps (before softmax) """
         self.activations.append(output)
 
     def _backward_hook(self, module, grad_in, grad_out):
-        """ Stores gradients """
         self.gradients.append(grad_out[0])
 
     
     def remove_hooks(self):
-        """ Remove hooks after usage. """
         for hook in self.hooks:
             hook.remove()  
     
@@ -153,7 +149,6 @@ class AttentionGuidedCAMJanus(AttentionGuidedCAM):
 
     @spaces.GPU(duration=120)
     def generate_cam(self, input_tensor, tokenizer, temperature, top_p, class_idx=None, visual_pooling_method="CLS", focus="Visual Encoder"):
-        """ Generates Grad-CAM heatmap for ViT. """
         
         
         # Forward pass
@@ -338,7 +333,6 @@ class AttentionGuidedCAMLLaVA(AttentionGuidedCAM):
 
     @spaces.GPU(duration=120)
     def generate_cam(self, inputs, tokenizer, temperature, top_p, class_idx=None, visual_pooling_method="CLS", focus="Visual Encoder"):
-        """ Generates Grad-CAM heatmap for ViT. """
         
         # Forward pass
         outputs_raw = self.model(**inputs)
@@ -401,16 +395,12 @@ class AttentionGuidedCAMLLaVA(AttentionGuidedCAM):
         start_idx = last + 1
         for i in range(start_idx, cam_sum_raw.shape[1]):
             cam_sum = cam_sum_raw[0, i, :] # shape: [1: seq_len]
-            # cam_sum_min = cam_sum.min()
-            # cam_sum_max = cam_sum.max()
-            # cam_sum = (cam_sum - cam_sum_min) / (cam_sum_max - cam_sum_min)
+
             cam_sum = cam_sum[image_mask].unsqueeze(0) # shape: [1, 1024]
             print("cam_sum shape: ", cam_sum.shape)
             num_patches = cam_sum.shape[-1]  # Last dimension of CAM output
             grid_size = int(num_patches ** 0.5)
             print(f"Detected grid size: {grid_size}x{grid_size}")
-
-            # Fix the reshaping step dynamically
             
             cam_sum = cam_sum.view(grid_size, grid_size)
             cam_sum = (cam_sum - cam_sum.min()) / (cam_sum.max() - cam_sum.min())
@@ -468,7 +458,6 @@ class AttentionGuidedCAMChartGemma(AttentionGuidedCAM):
     
     @spaces.GPU(duration=120)
     def generate_cam(self, inputs, tokenizer, temperature, top_p, class_idx=None, visual_pooling_method="CLS", focus="Visual Encoder"):
-        """ Generates Grad-CAM heatmap for ViT. """
         
         # Forward pass
         outputs_raw = self.model(**inputs)
@@ -544,14 +533,6 @@ class AttentionGuidedCAMChartGemma(AttentionGuidedCAM):
 
         cam_sum = F.relu(cam_sum)
         cam_sum = cam_sum.to(torch.float32)
-
-        # thresholding
-        # percentile = torch.quantile(cam_sum, 0.4)  # Adjust threshold dynamically
-        # cam_sum[cam_sum < percentile] = 0
-
-        # Reshape
-        # if visual_pooling_method == "CLS":
-        # cam_sum = cam_sum[0, 1:]
 
         # cam_sum shape: [1, seq_len, seq_len]
         cam_sum_lst = []
