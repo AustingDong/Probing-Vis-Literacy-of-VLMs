@@ -120,7 +120,6 @@ class LLaVA_Utils(Model_Utils):
     def init_LLaVA(self):
 
         model_path = "llava-hf/llava-1.5-7b-hf"
-        # model_path = "llava-hf/llava-v1.6-vicuna-7b-hf"
         config = AutoConfig.from_pretrained(model_path)
 
         self.vl_gpt = LlavaForConditionalGeneration.from_pretrained(model_path,
@@ -183,7 +182,6 @@ class ChartGemma_Utils(Model_Utils):
 
         model_path = "ahmed-masry/chartgemma"
         
-
         self.vl_gpt = PaliGemmaForConditionalGeneration.from_pretrained(
             model_path, 
             torch_dtype=torch.float16,  

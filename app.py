@@ -398,22 +398,7 @@ with gr.Blocks() as demo:
             [
                 "What is the cost of peanuts in Seoul?", 
                 "images/StackedBar.png"
-            ],
-
-            [
-                "Where is the dog? Left or Right?",
-                "images/cat_dog.png"
             ]
-            
-
-            # [
-            #     "explain this meme",
-            #     "images/doge.png",
-            # ],
-            # [
-            #     "Convert the formula into latex code.",
-            #     "images/equation.png",
-            # ],
             
         ],
         inputs=[question_input, image_input],
