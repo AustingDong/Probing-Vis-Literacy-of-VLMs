@@ -138,7 +138,10 @@ class LLaVA_Utils(Model_Utils):
 
             self.vl_gpt = LlavaOnevisionForConditionalGeneration.from_pretrained(model_path, 
                                                                         torch_dtype=torch.float16, 
-                                                                        low_cpu_mem_usage=True)
+                                                                        low_cpu_mem_usage=True,
+                                                                        attn_implementation = 'eager',
+                                                                        output_attentions=True)
+            self.vl_gpt, self.dtype, self.cuda_device = set_dtype_device(self.vl_gpt)
             self.tokenizer = self.processor.tokenizer
         
         return self.vl_gpt, self.tokenizer
