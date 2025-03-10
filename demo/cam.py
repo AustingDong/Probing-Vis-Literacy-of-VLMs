@@ -344,7 +344,7 @@ class AttentionGuidedCAMLLaVA(AttentionGuidedCAM):
         
         # Forward pass
         torch.autograd.set_detect_anomaly(True)
-        for param in self.model.named_parameters():
+        for param in self.model.parameters():
             param.requires_grad = False
         
         for layer in self.target_layers:
@@ -477,7 +477,7 @@ class AttentionGuidedCAMChartGemma(AttentionGuidedCAM):
         
         # Forward pass
         torch.autograd.set_detect_anomaly(True)
-        for param in self.model.named_parameters():
+        for param in self.model.parameters():
             param.requires_grad = False
         
         for layer in self.target_layers:
