@@ -7,11 +7,13 @@ from transformers import CLIPProcessor, CLIPModel
 from janus.models import MultiModalityCausalLM, VLChatProcessor
 
 @spaces.GPU(duration=120)
-def set_dtype_device(model, precision=16):
+def set_dtype_device(model, precision=16, device_map=None):
     dtype = (torch.bfloat16 if torch.cuda.is_available() else torch.float16) if precision==16 else (torch.bfloat32 if torch.cuda.is_available() else torch.float32)
     cuda_device = 'cuda' if torch.cuda.is_available() else 'cpu'
     if torch.cuda.is_available():
-        model = model.to(dtype).cuda()
+        model = model.to(dtype)
+        if not device_map:
+            model.cuda()
     else:
         torch.set_default_device("cpu")
         model = model.to(dtype)
@@ -125,6 +127,7 @@ class LLaVA_Utils(Model_Utils):
             self.vl_gpt = LlavaForConditionalGeneration.from_pretrained(model_path,
                                                         low_cpu_mem_usage=True,
                                                         attn_implementation = 'eager',
+                                                        device_map="auto",
                                                         output_attentions=True
                                                         )
             self.vl_gpt, self.dtype, self.cuda_device = set_dtype_device(self.vl_gpt)
@@ -137,11 +140,13 @@ class LLaVA_Utils(Model_Utils):
             self.processor = AutoProcessor.from_pretrained(model_path)
 
             self.vl_gpt = LlavaOnevisionForConditionalGeneration.from_pretrained(model_path, 
-                                                                        torch_dtype=torch.float16, 
+                                                                        torch_dtype=torch.float16,
+                                                                        device_map="auto", 
                                                                         low_cpu_mem_usage=True,
                                                                         attn_implementation = 'eager',
                                                                         output_attentions=True)
-            self.vl_gpt, self.dtype, self.cuda_device = set_dtype_device(self.vl_gpt)
+            self.vl_gpt, self.dtype, self.cuda_device = set_dtype_device(self.vl_gpt, device_map="auto")
+
             self.tokenizer = self.processor.tokenizer
         
         return self.vl_gpt, self.tokenizer
