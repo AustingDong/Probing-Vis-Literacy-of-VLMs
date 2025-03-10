@@ -336,7 +336,7 @@ class AttentionGuidedCAMLLaVA(AttentionGuidedCAM):
     def generate_cam(self, inputs, tokenizer, temperature, top_p, class_idx=None, visual_pooling_method="CLS", focus="Visual Encoder"):
         
         # Forward pass
-        outputs_raw = self.model(**inputs)
+        outputs_raw = self.model(**inputs, num_logits_to_keep=1)
 
         self.model.zero_grad()
         print("outputs_raw", outputs_raw)
