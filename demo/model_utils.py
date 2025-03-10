@@ -2,7 +2,7 @@ import torch
 import numpy as np
 import spaces
 from PIL import Image, ImageDraw, ImageFont
-from transformers import AutoConfig, AutoModelForCausalLM, LlavaForConditionalGeneration, LlavaNextForConditionalGeneration, LlavaNextProcessor, AutoProcessor, PaliGemmaForConditionalGeneration
+from transformers import AutoConfig, AutoModelForCausalLM, LlavaForConditionalGeneration, LlavaOnevisionForConditionalGeneration, LlavaNextForConditionalGeneration, LlavaNextProcessor, AutoProcessor, PaliGemmaForConditionalGeneration
 from transformers import CLIPProcessor, CLIPModel
 from janus.models import MultiModalityCausalLM, VLChatProcessor
 
@@ -117,19 +117,29 @@ class LLaVA_Utils(Model_Utils):
     def __init__(self):
         super().__init__()
 
-    def init_LLaVA(self):
+    def init_LLaVA(self, version):
+        if version == "1.5":
+            model_path = "llava-hf/llava-1.5-7b-hf"
+            config = AutoConfig.from_pretrained(model_path)
 
-        model_path = "llava-hf/llava-1.5-7b-hf"
-        config = AutoConfig.from_pretrained(model_path)
+            self.vl_gpt = LlavaForConditionalGeneration.from_pretrained(model_path,
+                                                        low_cpu_mem_usage=True,
+                                                        attn_implementation = 'eager',
+                                                        output_attentions=True
+                                                        )
+            self.vl_gpt, self.dtype, self.cuda_device = set_dtype_device(self.vl_gpt)
+            self.processor = AutoProcessor.from_pretrained(model_path)
+            self.tokenizer = self.processor.tokenizer
 
-        self.vl_gpt = LlavaForConditionalGeneration.from_pretrained(model_path,
-                                                    low_cpu_mem_usage=True,
-                                                    attn_implementation = 'eager',
-                                                    output_attentions=True
-                                                    )
-        self.vl_gpt, self.dtype, self.cuda_device = set_dtype_device(self.vl_gpt)
-        self.processor = AutoProcessor.from_pretrained(model_path)
-        self.tokenizer = self.processor.tokenizer
+        else:
+            model_path = "llava-hf/llava-onevision-qwen2-7b-si-hf"
+
+            self.processor = AutoProcessor.from_pretrained(model_path)
+
+            self.vl_gpt = LlavaOnevisionForConditionalGeneration.from_pretrained(model_path, 
+                                                                        torch_dtype=torch.float16, 
+                                                                        low_cpu_mem_usage=True)
+            self.tokenizer = self.processor.tokenizer
         
         return self.vl_gpt, self.tokenizer
     

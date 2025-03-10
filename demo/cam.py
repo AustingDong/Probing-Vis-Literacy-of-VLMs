@@ -274,7 +274,8 @@ class AttentionGuidedCAMJanus(AttentionGuidedCAM):
             # cam_sum shape: [1, seq_len, seq_len]
             cam_sum_lst = []
             cam_sum_raw = cam_sum
-            for i in range(620, cam_sum_raw.shape[1]):
+            start = 620
+            for i in range(start, cam_sum_raw.shape[1]):
                 cam_sum = cam_sum_raw[:, i, :] # shape: [1: seq_len]
                 cam_sum = cam_sum[input_tensor.images_seq_mask].unsqueeze(0) # shape: [1, 576]
                 print("cam_sum shape: ", cam_sum.shape)
@@ -290,7 +291,7 @@ class AttentionGuidedCAMJanus(AttentionGuidedCAM):
                 cam_sum_lst.append(cam_sum)
 
 
-            return cam_sum_lst, grid_size
+            return cam_sum_lst, grid_size, start
 
         # Aggregate activations and gradients from ALL layers
         
@@ -407,7 +408,7 @@ class AttentionGuidedCAMLLaVA(AttentionGuidedCAM):
             cam_sum_lst.append(cam_sum)
 
 
-        return cam_sum_lst, grid_size
+        return cam_sum_lst, grid_size, start_idx
 
 
 
@@ -556,7 +557,7 @@ class AttentionGuidedCAMChartGemma(AttentionGuidedCAM):
             cam_sum_lst.append(cam_sum)
 
 
-        return cam_sum_lst, grid_size
+        return cam_sum_lst, grid_size, start_idx
 
 
 
