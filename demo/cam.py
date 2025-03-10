@@ -150,6 +150,13 @@ class AttentionGuidedCAMJanus(AttentionGuidedCAM):
     @spaces.GPU(duration=120)
     def generate_cam(self, input_tensor, tokenizer, temperature, top_p, class_idx=None, visual_pooling_method="CLS", focus="Visual Encoder"):
         
+        torch.autograd.set_detect_anomaly(True)
+        for param in self.model.parameters():
+            param.requires_grad = False
+        
+        for layer in self.target_layers:
+            for param in layer.parameters():
+                param.requires_grad = True
         
         # Forward pass
         image_embeddings, inputs_embeddings, outputs = self.model(input_tensor, tokenizer, temperature, top_p)
@@ -336,7 +343,15 @@ class AttentionGuidedCAMLLaVA(AttentionGuidedCAM):
     def generate_cam(self, inputs, tokenizer, temperature, top_p, class_idx=None, visual_pooling_method="CLS", focus="Visual Encoder"):
         
         # Forward pass
-        outputs_raw = self.model(**inputs, num_logits_to_keep=1)
+        torch.autograd.set_detect_anomaly(True)
+        for param in self.model.named_parameters():
+            param.requires_grad = False
+        
+        for layer in self.target_layers:
+            for param in layer.parameters():
+                param.requires_grad = True
+        
+        outputs_raw = self.model(**inputs)
 
         self.model.zero_grad()
         print("outputs_raw", outputs_raw)
@@ -461,6 +476,14 @@ class AttentionGuidedCAMChartGemma(AttentionGuidedCAM):
     def generate_cam(self, inputs, tokenizer, temperature, top_p, class_idx=None, visual_pooling_method="CLS", focus="Visual Encoder"):
         
         # Forward pass
+        torch.autograd.set_detect_anomaly(True)
+        for param in self.model.named_parameters():
+            param.requires_grad = False
+        
+        for layer in self.target_layers:
+            for param in layer.parameters():
+                param.requires_grad = True
+        
         outputs_raw = self.model(**inputs)
 
         self.model.zero_grad()
