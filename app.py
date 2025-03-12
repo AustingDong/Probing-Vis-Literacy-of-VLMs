@@ -291,7 +291,7 @@ with gr.Blocks() as demo:
             activation_map_output = gr.Gallery(label="activation Map", height=300, columns=1)
 
         with gr.Column():
-            model_selector = gr.Dropdown(choices=["Clip", "ChartGemma-3B", "Janus-1B", "Janus-7B", "LLaVA-1.5-7B", "LLaVA-onevision-qwen2-7b-si"], value="Clip", label="model")
+            model_selector = gr.Dropdown(choices=["Clip", "ChartGemma-3B", "Janus-1B", "Janus-7B", "LLaVA-1.5-7B"], value="Clip", label="model")
             response_type = gr.Dropdown(choices=["Visualization only"], value="Visualization only", label="response_type")
             focus = gr.Dropdown(choices=["Visual Encoder"], value="Visual Encoder", label="focus")
             activation_map_method = gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="activation map type")
@@ -347,19 +347,52 @@ with gr.Blocks() as demo:
     examples_inpainting = gr.Examples(
         label="Multimodal Understanding examples",
         examples=[
+
+            [
+                "What was the price of a barrel of oil in February 2020?", 
+                "images/LineChart.png" 
+            ],
+
+            [
+                "What is the average internet speed in Japan?",
+                "images/BarChart.png"
+            ],
+
+            [
+                "What is the cost of peanuts in Seoul?", 
+                "images/StackedBar.png"
+            ],
+
+            [ 
+                "Which country has the lowest proportion of Gold medals?", 
+                "images/Stacked100.png"
+            ],
             
             [
                 "What is the approximate global smartphone market share of Samsung?",
                 "images/PieChart.png"
             ],
-            [
-                "What is the average internet speed in Japan?",
-                "images/BarChart.png"
+            
+            [ 
+                "What distance have customers traveled in the taxi the most?", 
+                "images/Histogram.png"
             ],
+
             [
-                "What was the average price of coffee beans in October 2019?",
+                "True/False: There is a negative linear relationship between the height and the weight of the 85 males.", 
+                "images/Scatterplot.png"
+            ],
+
+            [
+                "What was the average price of pount of coffee beans in October 2019?",
                 "images/AreaChart.png"
             ],
+
+            [
+                "What was the ratio of girls named 'Isla' to girls named 'Amelia' in 2012 in the UK?", 
+                "images/StackedArea.png"
+            ],
+
             [
                 "Which city's metro system has the largest number of stations?", 
                 "images/BubbleChart.png"
@@ -370,39 +403,9 @@ with gr.Blocks() as demo:
                 "images/Choropleth_New.png"
             ],
 
-            [ 
-                "What distance have customers traveled in the taxi the most?", 
-                "images/Histogram.png"
-            ],
-
-            [
-                "What was the price of a barrel of oil in February 2020?", 
-                "images/LineChart.png" 
-            ],
-
             [
                 "True/False: eBay is nested in the Software category.", 
                 "images/TreeMap.png"
-            ],
-
-            [
-                "True/False: There is a negative linear relationship between the height and the weight of the 85 males.", 
-                "images/Scatterplot.png"
-            ],
-            
-            [ 
-                "Which country has the lowest proportion of Gold medals?", 
-                "images/Stacked100.png"
-            ],
-
-            [
-                "What was the ratio of girls named 'Isla' to girls named 'Amelia' in 2012 in the UK?", 
-                "images/StackedArea.png"
-            ],
-
-            [
-                "What is the cost of peanuts in Seoul?", 
-                "images/StackedBar.png"
             ]
             
         ],

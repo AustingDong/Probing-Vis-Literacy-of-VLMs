@@ -162,8 +162,9 @@ class LLaVA_Utils(Model_Utils):
                 ],
             },
         ]
+        
         prompt = self.processor.apply_chat_template(conversation, add_generation_prompt=True)
-        pil_images = [Image.fromarray(image)]
+        pil_images = [Image.fromarray(image).resize((384, 384))]
         prepare_inputs = self.processor(
             images=pil_images, text=prompt, return_tensors="pt"
         ).to(self.cuda_device, dtype=self.dtype)
