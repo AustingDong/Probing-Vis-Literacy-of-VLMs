@@ -9,6 +9,7 @@ from demo.model_utils import Clip_Utils, Janus_Utils, LLaVA_Utils, ChartGemma_Ut
 import numpy as np
 import matplotlib.pyplot as plt
 import gc
+import os
 import spaces
 from PIL import Image
 
@@ -53,7 +54,7 @@ def multimodal_understanding(model_type,
                              activation_map_method, 
                              visual_pooling_method, 
                              image, question, seed, top_p, temperature, target_token_idx,
-                             visualization_layer_min, visualization_layer_max, focus, response_type):
+                             visualization_layer_min, visualization_layer_max, focus, response_type, chart_type):
     # Clear CUDA cache before generating
     gc.collect()
     if torch.cuda.is_available():
@@ -75,7 +76,8 @@ def multimodal_understanding(model_type,
         if activation_map_method == "GradCAM":
             # Generate Grad-CAM
             all_layers = [layer.layer_norm1 for layer in clip_utils.model.vision_model.encoder.layers]
-            if visualization_layers_min.value != visualization_layers_max.value:
+
+            if visualization_layer_min != visualization_layer_max:
                 target_layers = all_layers[visualization_layer_min-1 : visualization_layer_max-1]
             else:
                 target_layers = [all_layers[visualization_layer_min-1]]
@@ -110,12 +112,6 @@ def multimodal_understanding(model_type,
 
         input_ids = prepare_inputs.input_ids[0].cpu().tolist()
         input_ids_decoded = [tokenizer.decode([input_ids[i]]) for i in range(len(input_ids))]
-        # if model_name.split('-')[0] == "Janus":
-        #     start = 620 
-        # elif model_name.split('-')[0] == "ChartGemma":
-        #     start = 1024
-        # elif model_name.split('-')[0] == "LLaVA": 
-        #     start = 581
 
         if activation_map_method == "GradCAM":
             # target_layers = vl_gpt.vision_model.vision_tower.blocks
@@ -123,11 +119,15 @@ def multimodal_understanding(model_type,
                 all_layers = [block.norm1 for block in vl_gpt.vision_model.vision_tower.blocks]
             else:
                 all_layers = [layer.self_attn for layer in vl_gpt.language_model.model.layers]
-
-            if visualization_layers_min.value != visualization_layers_max.value:
-                target_layers = all_layers[visualization_layer_min-1 : visualization_layer_max-1]
+            
+            print("layer values:", visualization_layer_min, visualization_layer_max)
+            if visualization_layer_min != visualization_layer_max:
+                print("multi layers")
+                target_layers = all_layers[visualization_layer_min-1 : visualization_layer_max]
             else:
+                print("single layer")
                 target_layers = [all_layers[visualization_layer_min-1]]
+            
 
             if model_name.split('-')[0] == "Janus":
                 gradcam = AttentionGuidedCAMJanus(vl_gpt, target_layers)
@@ -164,6 +164,26 @@ def multimodal_understanding(model_type,
                         cam_i = add_title_to_image(cam_i, input_ids_decoded[start + i])
 
                         cam.append(cam_i)
+
+    # Collect Results
+    RESULTS_ROOT = "./results"
+    FILES_ROOT = f"{RESULTS_ROOT}/{model_name}/{focus}/{chart_type}/layer{visualization_layer_min}-{visualization_layer_max}"
+    os.makedirs(FILES_ROOT, exist_ok=True)
+    if focus == "Visual Encoder":
+        cam[0].save(f"{FILES_ROOT}/{visual_pooling_method}.png")
+    else:
+        for i, cam_p in enumerate(cam):
+            cam_p.save(f"{FILES_ROOT}/{i}.png")
+            
+    with open(f"{FILES_ROOT}/input_text_decoded.txt", "w") as f:
+        f.write(input_text_decoded)
+        f.close()
+
+    with open(f"{FILES_ROOT}/answer.txt", "w") as f:
+        f.write(answer)
+        f.close()
+            
+
 
     return answer, cam, input_text_decoded
 
@@ -235,8 +255,8 @@ def model_slider_change(model_type):
 
         res = (
             gr.Dropdown(choices=["Visualization only", "answer + visualization"], value="answer + visualization", label="response_type"),
-            gr.Slider(minimum=1, maximum=18, value=15, step=1, label="visualization layers min"),
-            gr.Slider(minimum=1, maximum=18, value=15, step=1, label="visualization layers max"),
+            gr.Slider(minimum=1, maximum=language_model_best_layer, value=language_model_best_layer, step=1, label="visualization layers min"),
+            gr.Slider(minimum=1, maximum=language_model_best_layer, value=language_model_best_layer, step=1, label="visualization layers max"),
             gr.Dropdown(choices=["Language Model"], value="Language Model", label="focus"),
             gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="activation map type")
         )
@@ -291,7 +311,7 @@ with gr.Blocks() as demo:
             activation_map_output = gr.Gallery(label="activation Map", height=300, columns=1)
 
         with gr.Column():
-            model_selector = gr.Dropdown(choices=["Clip", "ChartGemma-3B", "Janus-1B", "Janus-7B", "LLaVA-1.5-7B"], value="Clip", label="model")
+            model_selector = gr.Dropdown(choices=["Clip", "ChartGemma-3B", "Janus-Pro-1B", "Janus-Pro-7B", "LLaVA-1.5-7B"], value="Clip", label="model")
             response_type = gr.Dropdown(choices=["Visualization only"], value="Visualization only", label="response_type")
             focus = gr.Dropdown(choices=["Visual Encoder"], value="Visual Encoder", label="focus")
             activation_map_method = gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="activation map type")
@@ -339,7 +359,8 @@ with gr.Blocks() as demo:
 
         
 
-    understanding_button = gr.Button("Chat")
+    understanding_button = gr.Button("Submit")
+    chart_type = gr.Textbox(label="Chart Type")
     understanding_output = gr.Textbox(label="Answer")
     understanding_target_token_decoded_output = gr.Textbox(label="Target Token Decoded")
 
@@ -349,67 +370,79 @@ with gr.Blocks() as demo:
         examples=[
 
             [
+                "LineChart",
                 "What was the price of a barrel of oil in February 2020?", 
                 "images/LineChart.png" 
             ],
 
             [
+                "BarChart",
                 "What is the average internet speed in Japan?",
                 "images/BarChart.png"
             ],
 
             [
+                "StackedBar",
                 "What is the cost of peanuts in Seoul?", 
                 "images/StackedBar.png"
             ],
 
-            [ 
+            [
+                "100%StackedBar",
                 "Which country has the lowest proportion of Gold medals?", 
                 "images/Stacked100.png"
             ],
             
             [
+                "PieChart",
                 "What is the approximate global smartphone market share of Samsung?",
                 "images/PieChart.png"
             ],
             
-            [ 
+            [
+                "Histogram",
                 "What distance have customers traveled in the taxi the most?", 
                 "images/Histogram.png"
             ],
 
             [
+                "Scatterplot",
                 "True/False: There is a negative linear relationship between the height and the weight of the 85 males.", 
                 "images/Scatterplot.png"
             ],
 
             [
+                "AreaChart",
                 "What was the average price of pount of coffee beans in October 2019?",
                 "images/AreaChart.png"
             ],
 
             [
+                "StackedArea",
                 "What was the ratio of girls named 'Isla' to girls named 'Amelia' in 2012 in the UK?", 
                 "images/StackedArea.png"
             ],
 
             [
+                "BubbleChart",
                 "Which city's metro system has the largest number of stations?", 
                 "images/BubbleChart.png"
             ],
 
             [ 
+                "Choropleth",
                 "True/False: In 2020, the unemployment rate for Washington (WA) was higher than that of Wisconsin (WI).", 
                 "images/Choropleth_New.png"
             ],
 
             [
+                "TreeMap",
                 "True/False: eBay is nested in the Software category.", 
                 "images/TreeMap.png"
             ]
             
         ],
-        inputs=[question_input, image_input],
+        inputs=[chart_type, question_input, image_input],
     )
     
 
@@ -418,7 +451,7 @@ with gr.Blocks() as demo:
     understanding_button.click(
         multimodal_understanding,
         inputs=[model_selector, activation_map_method, visual_pooling_method, image_input, question_input, und_seed_input, top_p, temperature, target_token_idx, 
-                visualization_layers_min, visualization_layers_max, focus, response_type],
+                visualization_layers_min, visualization_layers_max, focus, response_type, chart_type],
         outputs=[understanding_output, activation_map_output, understanding_target_token_decoded_output]
     )
     
