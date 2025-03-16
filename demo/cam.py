@@ -535,7 +535,11 @@ class AttentionGuidedCAMChartGemma(AttentionGuidedCAM):
         elif focus == "Language Model":
             self.model.zero_grad()
             # print(outputs_raw)
-            loss = outputs_raw.logits.max(dim=-1).values.sum()
+            # loss = outputs_raw.logits.max(dim=-1).values.sum()
+            if class_idx == -1:
+                loss = outputs_raw.logits.max(dim=-1).values.sum()
+            else:
+                loss = outputs_raw.logits.max(dim=-1).values[0, start_idx + class_idx]
             loss.backward()
 
 
@@ -556,6 +560,7 @@ class AttentionGuidedCAMChartGemma(AttentionGuidedCAM):
                 
                 grad = F.relu(grad)
 
+                # cam = grad
                 cam = act * grad # shape: [1, heads, seq_len, seq_len]
                 cam = cam.sum(dim=1) # shape: [1, seq_len, seq_len]
                 cam = cam.to(torch.float32).detach().cpu()
