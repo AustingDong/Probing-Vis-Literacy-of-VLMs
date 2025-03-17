@@ -3,7 +3,7 @@ import torch
 from transformers import AutoConfig, AutoModelForCausalLM
 from janus.models import MultiModalityCausalLM, VLChatProcessor
 from janus.utils.io import load_pil_images
-from demo.visualization import generate_gradcam, VisualizationJanus, VisualizationClip, VisualizationChartGemma, VisualizationLLaVA
+from demo.cam import generate_gradcam, AttentionGuidedCAMJanus, AttentionGuidedCAMClip, AttentionGuidedCAMChartGemma, AttentionGuidedCAMLLaVA
 from demo.model_utils import Clip_Utils, Janus_Utils, LLaVA_Utils, ChartGemma_Utils, add_title_to_image
 
 import numpy as np
@@ -82,8 +82,8 @@ def multimodal_understanding(model_type,
                 target_layers = all_layers[visualization_layer_min-1 : visualization_layer_max-1]
             else:
                 target_layers = [all_layers[visualization_layer_min-1]]
-            grad_cam = VisualizationClip(clip_utils.model, target_layers)
-            cam, outputs, grid_size = grad_cam.generate_cam(inputs, target_token_idx=0, visual_pooling_method=visual_pooling_method)
+            grad_cam = AttentionGuidedCAMClip(clip_utils.model, target_layers)
+            cam, outputs, grid_size = grad_cam.generate_cam(inputs, class_idx=0, visual_pooling_method=visual_pooling_method)
             cam = cam.to("cpu")
             cam = [generate_gradcam(cam, image, size=(224, 224))]
             grad_cam.remove_hooks()
@@ -134,11 +134,11 @@ def multimodal_understanding(model_type,
             
 
             if model_name.split('-')[0] == "Janus":
-                gradcam = VisualizationJanus(vl_gpt, target_layers)
+                gradcam = AttentionGuidedCAMJanus(vl_gpt, target_layers)
             elif model_name.split('-')[0] == "LLaVA":
-                gradcam = VisualizationLLaVA(vl_gpt, target_layers)
+                gradcam = AttentionGuidedCAMLLaVA(vl_gpt, target_layers)
             elif model_name.split('-')[0] == "ChartGemma":
-                gradcam = VisualizationChartGemma(vl_gpt, target_layers)
+                gradcam = AttentionGuidedCAMChartGemma(vl_gpt, target_layers)
 
             start = 0
             cam = []
@@ -154,11 +154,11 @@ def multimodal_understanding(model_type,
                     cam = []
                     while start + i < len(input_ids_decoded):
                         if model_name.split('-')[0] == "Janus":
-                            gradcam = VisualizationJanus(vl_gpt, target_layers)
+                            gradcam = AttentionGuidedCAMJanus(vl_gpt, target_layers)
                         elif model_name.split('-')[0] == "LLaVA":
-                            gradcam = VisualizationLLaVA(vl_gpt, target_layers)
+                            gradcam = AttentionGuidedCAMLLaVA(vl_gpt, target_layers)
                         elif model_name.split('-')[0] == "ChartGemma":
-                            gradcam = VisualizationChartGemma(vl_gpt, target_layers)
+                            gradcam = AttentionGuidedCAMChartGemma(vl_gpt, target_layers)
                         cam_tensors, grid_size, start = gradcam.generate_cam(prepare_inputs, tokenizer, temperature, top_p, i, visual_pooling_method, focus)
                         cam_grid = cam_tensors.reshape(grid_size, grid_size)
                         cam_i = generate_gradcam(cam_grid, image)
