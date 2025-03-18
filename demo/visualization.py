@@ -8,7 +8,7 @@ from PIL import Image
 from torch import nn
 import spaces
 from demo.modify_llama import *
-
+from demo.modified_attn import ModifiedLlamaAttention
 
 class Visualization:
     def __init__(self, model, register=True):
@@ -25,6 +25,7 @@ class Visualization:
             self.hooks.append(layer.register_backward_hook(self._backward_hook))
 
     def _forward_hook(self, module, input, output):
+        print("forward_hook: self_attn_input: ", input)
         self.activations.append(output)
 
     def _backward_hook(self, module, grad_in, grad_out):
@@ -41,6 +42,9 @@ class Visualization:
             layer.get_attn_map = types.MethodType(get_attn_map, layer)
 
     def _forward_activate_hooks(self, module, input, output):
+        print("forward_activate_hool: module: ", module)
+        print("forward_activate_hook: self_attn_input: ", input)
+
         attn_output, attn_weights = output  # Unpack outputs
         print("attn_output shape:", attn_output.shape)
         print("attn_weights shape:", attn_weights.shape)
@@ -231,15 +235,15 @@ class VisualizationClip(Visualization):
         super().__init__(model)
 
     @spaces.GPU(duration=120)
-    def forward_backward(self, input_tensor, visual_pooling_method, target_token_idx):
+    def forward_backward(self, input_tensor, visual_method, target_token_idx):
         output_full = self.model(**input_tensor)
 
         if target_token_idx is None:
             target_token_idx = torch.argmax(output_full.logits, dim=1).item()
 
-        if visual_pooling_method == "CLS":
+        if visual_method == "CLS":
             output = output_full.image_embeds
-        elif visual_pooling_method == "avg":
+        elif visual_method == "avg":
             output = self.model.visual_projection(output_full.vision_model_output.last_hidden_state).mean(dim=1)
         else:
             output, _ = self.model.visual_projection(output_full.vision_model_output.last_hidden_state).max(dim=1)
@@ -250,11 +254,11 @@ class VisualizationClip(Visualization):
         
         
     @spaces.GPU(duration=120)
-    def generate_cam(self, input_tensor, target_token_idx=None, visual_pooling_method="CLS"):
+    def generate_cam(self, input_tensor, target_token_idx=None, visual_method="CLS"):
         """ Generates Grad-CAM heatmap for ViT. """
         self.setup_grads()
         # Forward Backward pass
-        output_full = self.forward_backward(input_tensor, visual_pooling_method, target_token_idx)
+        output_full = self.forward_backward(input_tensor, visual_method, target_token_idx)
 
         cam_sum = self.grad_cam_vis()
         cam_sum, grid_size = self.process(cam_sum)
@@ -291,34 +295,33 @@ class VisualizationJanus(Visualization):
         self._modify_layers()
         self._register_hooks_activations()
 
-    def forward_backward(self, input_tensor, tokenizer, temperature, top_p, target_token_idx=None, visual_pooling_method="CLS", focus="Visual Encoder"):
+    def forward_backward(self, input_tensor, tokenizer, temperature, top_p, target_token_idx=None, visual_method="softmax", focus="Visual Encoder"):
         # Forward
         image_embeddings, inputs_embeddings, outputs = self.model(input_tensor, tokenizer, temperature, top_p)
         input_ids = input_tensor.input_ids
-
+        start_idx = 620
+        self.model.zero_grad()
         if focus == "Visual Encoder":
-            
-            start_idx = 620
-            self.model.zero_grad()
-
             loss = outputs.logits.max(dim=-1).values[0, start_idx + target_token_idx]
             loss.backward()
         
         elif focus == "Language Model":
-            self.model.zero_grad()
-            loss = outputs.logits.max(dim=-1).values.sum()
+            if target_token_idx == -1:
+                loss = outputs.logits.max(dim=-1).values.sum()
+            else:
+                loss = outputs.logits.max(dim=-1).values[0, start_idx + target_token_idx]
             loss.backward()
             
-            self.activations = [layer.get_attn_map() for layer in self.target_layers]
+            self.activations = self.activations = [layer.attn_sigmoid_weights for layer in self.target_layers] if visual_method == "sigmoid" else [layer.get_attn_map() for layer in self.target_layers]
             self.gradients = [layer.get_attn_gradients() for layer in self.target_layers]
     
     @spaces.GPU(duration=120)
-    def generate_cam(self, input_tensor, tokenizer, temperature, top_p, target_token_idx=None, visual_pooling_method="CLS", focus="Visual Encoder"):
+    def generate_cam(self, input_tensor, tokenizer, temperature, top_p, target_token_idx=None, visual_method="softmax", focus="Visual Encoder"):
         
         self.setup_grads()
 
         # Forward Backward pass
-        self.forward_backward(input_tensor, tokenizer, temperature, top_p, target_token_idx, visual_pooling_method, focus)
+        self.forward_backward(input_tensor, tokenizer, temperature, top_p, target_token_idx, visual_method, focus)
         
         start_idx = 620
         if focus == "Visual Encoder":
@@ -365,7 +368,7 @@ class VisualizationLLaVA(Visualization):
         self.gradients = [layer.get_attn_gradients() for layer in self.target_layers]
 
     @spaces.GPU(duration=120)
-    def generate_cam(self, inputs, tokenizer, temperature, top_p, target_token_idx=None, visual_pooling_method="CLS", focus="Visual Encoder"):
+    def generate_cam(self, inputs, tokenizer, temperature, top_p, target_token_idx=None, visual_method="softmax", focus="Visual Encoder"):
         
         self.setup_grads()
         self.forward_backward(inputs)
@@ -401,7 +404,7 @@ class VisualizationChartGemma(Visualization):
         self._modify_layers()
         self._register_hooks_activations()
     
-    def forward_backward(self, inputs, focus, start_idx, target_token_idx):
+    def forward_backward(self, inputs, focus, start_idx, target_token_idx, visual_method="softmax"):
         outputs_raw = self.model(**inputs, output_hidden_states=True)
         if focus == "Visual Encoder":
             
@@ -417,11 +420,11 @@ class VisualizationChartGemma(Visualization):
             else:
                 loss = outputs_raw.logits.max(dim=-1).values[0, start_idx + target_token_idx]
             loss.backward()
-            self.activations = [layer.get_attn_map() for layer in self.target_layers]
+            self.activations = [layer.attn_sigmoid_weights for layer in self.target_layers] if visual_method == "sigmoid" else [layer.get_attn_map() for layer in self.target_layers]
             self.gradients = [layer.get_attn_gradients() for layer in self.target_layers]
     
     @spaces.GPU(duration=120)
-    def generate_cam(self, inputs, tokenizer, temperature, top_p, target_token_idx=None, visual_pooling_method="CLS", focus="Visual Encoder"):
+    def generate_cam(self, inputs, tokenizer, temperature, top_p, target_token_idx=None, visual_method="softmax", focus="Visual Encoder"):
         
         # Forward pass
         self.setup_grads()
@@ -439,7 +442,7 @@ class VisualizationChartGemma(Visualization):
         start_idx = last + 1
 
 
-        self.forward_backward(inputs, focus, start_idx, target_token_idx)
+        self.forward_backward(inputs, focus, start_idx, target_token_idx, visual_method)
         if focus == "Visual Encoder":
             
             cam_sum = self.grad_cam_vis()

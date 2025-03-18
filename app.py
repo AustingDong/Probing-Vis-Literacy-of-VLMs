@@ -5,6 +5,7 @@ from janus.models import MultiModalityCausalLM, VLChatProcessor
 from janus.utils.io import load_pil_images
 from demo.visualization import generate_gradcam, VisualizationJanus, VisualizationClip, VisualizationChartGemma, VisualizationLLaVA
 from demo.model_utils import Clip_Utils, Janus_Utils, LLaVA_Utils, ChartGemma_Utils, add_title_to_image
+from demo.modified_attn import ModifiedLlamaAttention, ModifiedGemmaAttention
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -53,7 +54,7 @@ def clean():
 @spaces.GPU(duration=120)
 def multimodal_understanding(model_type, 
                              activation_map_method, 
-                             visual_pooling_method, 
+                             visual_method, 
                              image, question, seed, top_p, temperature, target_token_idx,
                              visualization_layer_min, visualization_layer_max, focus, response_type, chart_type):
     # Clear CUDA cache before generating
@@ -83,7 +84,7 @@ def multimodal_understanding(model_type,
             else:
                 target_layers = [all_layers[visualization_layer_min-1]]
             grad_cam = VisualizationClip(clip_utils.model, target_layers)
-            cam, outputs, grid_size = grad_cam.generate_cam(inputs, target_token_idx=0, visual_pooling_method=visual_pooling_method)
+            cam, outputs, grid_size = grad_cam.generate_cam(inputs, target_token_idx=0, visual_method=visual_method)
             cam = cam.to("cpu")
             cam = [generate_gradcam(cam, image, size=(224, 224))]
             grad_cam.remove_hooks()
@@ -144,7 +145,7 @@ def multimodal_understanding(model_type,
             cam = []
             if focus == "Visual Encoder":
                 if target_token_idx != -1:
-                    cam_tensors, grid_size, start = gradcam.generate_cam(prepare_inputs, tokenizer, temperature, top_p, target_token_idx, visual_pooling_method, focus)
+                    cam_tensors, grid_size, start = gradcam.generate_cam(prepare_inputs, tokenizer, temperature, top_p, target_token_idx, visual_method, focus)
                     cam_grid = cam_tensors.reshape(grid_size, grid_size)
                     cam_i = generate_gradcam(cam_grid, image)
                     cam_i = add_title_to_image(cam_i, input_ids_decoded[start + target_token_idx])
@@ -159,7 +160,7 @@ def multimodal_understanding(model_type,
                             gradcam = VisualizationLLaVA(vl_gpt, target_layers)
                         elif model_name.split('-')[0] == "ChartGemma":
                             gradcam = VisualizationChartGemma(vl_gpt, target_layers)
-                        cam_tensors, grid_size, start = gradcam.generate_cam(prepare_inputs, tokenizer, temperature, top_p, i, visual_pooling_method, focus)
+                        cam_tensors, grid_size, start = gradcam.generate_cam(prepare_inputs, tokenizer, temperature, top_p, i, visual_method, focus)
                         cam_grid = cam_tensors.reshape(grid_size, grid_size)
                         cam_i = generate_gradcam(cam_grid, image)
                         cam_i = add_title_to_image(cam_i, input_ids_decoded[start + i])
@@ -167,7 +168,7 @@ def multimodal_understanding(model_type,
                         gradcam.remove_hooks()
                         i += 1
             else:
-                cam_tensors, grid_size, start = gradcam.generate_cam(prepare_inputs, tokenizer, temperature, top_p, target_token_idx, visual_pooling_method, focus)
+                cam_tensors, grid_size, start = gradcam.generate_cam(prepare_inputs, tokenizer, temperature, top_p, target_token_idx, visual_method, focus)
                 if target_token_idx != -1:
                     input_text_decoded = input_ids_decoded[start + target_token_idx]
                     for i, cam_tensor in enumerate(cam_tensors):
@@ -190,13 +191,11 @@ def multimodal_understanding(model_type,
 
     # Collect Results
     RESULTS_ROOT = "./results"
-    FILES_ROOT = f"{RESULTS_ROOT}/{model_name}/{focus}/{chart_type}/layer{visualization_layer_min}-{visualization_layer_max}"
+    FILES_ROOT = f"{RESULTS_ROOT}/{model_name}/{focus}/{visual_method}/{chart_type}/layer{visualization_layer_min}-{visualization_layer_max}/{'all_tokens' if target_token_idx == -1 else f'--{input_ids_decoded[start + target_token_idx]}--'}"
     os.makedirs(FILES_ROOT, exist_ok=True)
-    if focus == "Visual Encoder":
-        cam[0].save(f"{FILES_ROOT}/{visual_pooling_method}.png")
-    else:
-        for i, cam_p in enumerate(cam):
-            cam_p.save(f"{FILES_ROOT}/{i}.png")
+    
+    for i, cam_p in enumerate(cam):
+        cam_p.save(f"{FILES_ROOT}/{i}.png")
             
     with open(f"{FILES_ROOT}/input_text_decoded.txt", "w") as f:
         f.write(input_text_decoded)
@@ -218,36 +217,58 @@ def multimodal_understanding(model_type,
 def model_slider_change(model_type):
     global model_utils, vl_gpt, tokenizer, clip_utils, model_name, language_model_max_layer, language_model_best_layer, vision_model_best_layer
     model_name = model_type
+
+
+    encoder_only_res = [
+        gr.Dropdown(choices=["Visualization only"], value="Visualization only", label="response_type"),
+        gr.Dropdown(choices=["Visual Encoder"], value="Visual Encoder", label="focus"),
+        gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="activation map type"),
+        gr.Dropdown(choices=["CLS", "max", "avg"], value="CLS", label="visual pooling method")
+    ]
+
+    visual_res = [
+        gr.Dropdown(choices=["Visualization only", "answer + visualization"], value="Visualization only", label="response_type"),
+        gr.Dropdown(choices=["Visual Encoder"], value="Visual Encoder", label="focus"),
+        gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="activation map type"),
+        gr.Dropdown(choices=["softmax", "sigmoid"], value="softmax", label="activation function")
+    ]
+
+    language_res = [
+        gr.Dropdown(choices=["Visualization only", "answer + visualization"], value="answer + visualization", label="response_type"),
+        gr.Dropdown(choices=["Language Model"], value="Language Model", label="focus"),
+        gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="activation map type"),
+        gr.Dropdown(choices=["softmax", "sigmoid"], value="softmax", label="activation function")
+    ]
+
+
     if model_type == "Clip":
         clean()
         set_seed()
         clip_utils = Clip_Utils()
         clip_utils.init_Clip()
-        res = (
-            gr.Dropdown(choices=["Visualization only"], value="Visualization only", label="response_type"),
+        sliders = [
             gr.Slider(minimum=1, maximum=12, value=12, step=1, label="visualization layers min"),
             gr.Slider(minimum=1, maximum=12, value=12, step=1, label="visualization layers max"),
-            gr.Dropdown(choices=["Visual Encoder"], value="Visual Encoder", label="focus"),
-            gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="activation map type")
-        )
-        return res
+        ]
+        return tuple(encoder_only_res + sliders)
+    
     elif model_type.split('-')[0] == "Janus":
         
         clean()
         set_seed()
         model_utils = Janus_Utils()
         vl_gpt, tokenizer = model_utils.init_Janus(model_type.split('-')[-1])
+        for layer in vl_gpt.language_model.model.layers:
+            layer.self_attn = ModifiedLlamaAttention(layer.self_attn)
+        
         language_model_max_layer = 24
         language_model_best_layer = 8
-
-        res = (
-            gr.Dropdown(choices=["Visualization only", "answer + visualization"], value="answer + visualization", label="response_type"),
+        
+        sliders = [
             gr.Slider(minimum=1, maximum=24, value=24, step=1, label="visualization layers min"),
             gr.Slider(minimum=1, maximum=24, value=24, step=1, label="visualization layers max"),
-            gr.Dropdown(choices=["Visual Encoder", "Language Model"], value="Visual Encoder", label="focus"),
-            gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="activation map type")
-        )
-        return res
+        ]
+        return tuple(visual_res + sliders)
     
     elif model_type.split('-')[0] == "LLaVA":
         
@@ -259,32 +280,28 @@ def model_slider_change(model_type):
         language_model_max_layer = 32 if version == "1.5" else 28
         language_model_best_layer = 10
 
-        res = (
-            gr.Dropdown(choices=["Visualization only", "answer + visualization"], value="answer + visualization", label="response_type"),
+        sliders = [
             gr.Slider(minimum=1, maximum=language_model_max_layer, value=language_model_best_layer, step=1, label="visualization layers min"),
             gr.Slider(minimum=1, maximum=language_model_max_layer, value=language_model_best_layer, step=1, label="visualization layers max"),
-            gr.Dropdown(choices=["Language Model"], value="Language Model", label="focus"),
-            gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="activation map type")
-        )
-        return res
+        ]
+        return tuple(language_res + sliders)
     
     elif model_type.split('-')[0] == "ChartGemma":
         clean()
         set_seed()
         model_utils = ChartGemma_Utils()
         vl_gpt, tokenizer = model_utils.init_ChartGemma()
+        for layer in vl_gpt.language_model.model.layers:
+            layer.self_attn = ModifiedGemmaAttention(layer.self_attn)
         language_model_max_layer = 18
         vision_model_best_layer = 19
         language_model_best_layer = 15
 
-        res = (
-            gr.Dropdown(choices=["Visualization only", "answer + visualization"], value="answer + visualization", label="response_type"),
+        sliders = [
             gr.Slider(minimum=1, maximum=language_model_best_layer, value=language_model_best_layer, step=1, label="visualization layers min"),
             gr.Slider(minimum=1, maximum=language_model_best_layer, value=language_model_best_layer, step=1, label="visualization layers max"),
-            gr.Dropdown(choices=["Visual Encoder", "Language Model"], value="Language Model", label="focus"),
-            gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="activation map type")
-        )
-        return res
+        ]
+        return tuple(language_res + sliders)
 
     
 
@@ -362,7 +379,8 @@ with gr.Blocks() as demo:
             response_type = gr.Dropdown(choices=["Visualization only"], value="Visualization only", label="response_type")
             focus = gr.Dropdown(choices=["Visual Encoder"], value="Visual Encoder", label="focus")
             activation_map_method = gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="visualization type")
-            visual_pooling_method = gr.Dropdown(choices=["CLS", "max", "avg"], value="CLS", label="visual pooling method")
+            # activation_function = gr.Dropdown(choices=["softmax", "sigmoid"], value="softmax", label="activation function")
+            visual_method = gr.Dropdown(choices=["CLS", "max", "avg"], value="CLS", label="visual pooling method")
             
 
             visualization_layers_min = gr.Slider(minimum=1, maximum=12, value=12, step=1, label="visualization layers min")
@@ -377,10 +395,11 @@ with gr.Blocks() as demo:
             inputs=model_selector, 
             outputs=[
                 response_type,
-                visualization_layers_min,
-                visualization_layers_max,
                 focus,
-                activation_map_method
+                activation_map_method,
+                visual_method,
+                visualization_layers_min,
+                visualization_layers_max
             ]
         )
         
@@ -492,7 +511,7 @@ with gr.Blocks() as demo:
         
     understanding_button.click(
         multimodal_understanding,
-        inputs=[model_selector, activation_map_method, visual_pooling_method, image_input, question_input, und_seed_input, top_p, temperature, target_token_idx, 
+        inputs=[model_selector, activation_map_method, visual_method, image_input, question_input, und_seed_input, top_p, temperature, target_token_idx, 
                 visualization_layers_min, visualization_layers_max, focus, response_type, chart_type],
         outputs=[understanding_output, activation_map_output, understanding_target_token_decoded_output]
     )

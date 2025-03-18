@@ -204,7 +204,7 @@ class ChartGemma_Utils(Model_Utils):
         self.vl_gpt = PaliGemmaForConditionalGeneration.from_pretrained(
             model_path, 
             torch_dtype=torch.float16,  
-            attn_implementation="sdpa", 
+            attn_implementation="eager", 
             output_attentions=True
         )
         self.vl_gpt, self.dtype, self.cuda_device = set_dtype_device(self.vl_gpt)
