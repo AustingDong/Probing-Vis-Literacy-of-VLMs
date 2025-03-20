@@ -56,7 +56,7 @@ def multimodal_understanding(model_type,
                              activation_map_method, 
                              visual_method, 
                              image, question, seed, top_p, temperature, target_token_idx,
-                             visualization_layer_min, visualization_layer_max, focus, response_type, chart_type):
+                             visualization_layer_min, visualization_layer_max, focus, response_type, chart_type, accumulate_method):
     # Clear CUDA cache before generating
     gc.collect()
     if torch.cuda.is_available():
@@ -160,7 +160,7 @@ def multimodal_understanding(model_type,
                             gradcam = VisualizationLLaVA(vl_gpt, target_layers)
                         elif model_name.split('-')[0] == "ChartGemma":
                             gradcam = VisualizationChartGemma(vl_gpt, target_layers)
-                        cam_tensors, grid_size, start = gradcam.generate_cam(prepare_inputs, tokenizer, temperature, top_p, i, visual_method, focus)
+                        cam_tensors, grid_size, start = gradcam.generate_cam(prepare_inputs, tokenizer, temperature, top_p, i, visual_method, focus, accumulate_method)
                         cam_grid = cam_tensors.reshape(grid_size, grid_size)
                         cam_i = generate_gradcam(cam_grid, image)
                         cam_i = add_title_to_image(cam_i, input_ids_decoded[start + i])
@@ -168,7 +168,7 @@ def multimodal_understanding(model_type,
                         gradcam.remove_hooks()
                         i += 1
             else:
-                cam_tensors, grid_size, start = gradcam.generate_cam(prepare_inputs, tokenizer, temperature, top_p, target_token_idx, visual_method, focus)
+                cam_tensors, grid_size, start = gradcam.generate_cam(prepare_inputs, tokenizer, temperature, top_p, target_token_idx, visual_method, focus, accumulate_method)
                 if target_token_idx != -1:
                     input_text_decoded = input_ids_decoded[start + target_token_idx]
                     for i, cam_tensor in enumerate(cam_tensors):
@@ -379,7 +379,7 @@ with gr.Blocks() as demo:
             response_type = gr.Dropdown(choices=["Visualization only"], value="Visualization only", label="response_type")
             focus = gr.Dropdown(choices=["Visual Encoder"], value="Visual Encoder", label="focus")
             activation_map_method = gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="visualization type")
-            # activation_function = gr.Dropdown(choices=["softmax", "sigmoid"], value="softmax", label="activation function")
+            accumulate_method = gr.Dropdown(choices=["sum", "mult"], value="sum", label="layers accumulate method")
             visual_method = gr.Dropdown(choices=["CLS", "max", "avg"], value="CLS", label="visual pooling method")
             
 
@@ -512,7 +512,7 @@ with gr.Blocks() as demo:
     understanding_button.click(
         multimodal_understanding,
         inputs=[model_selector, activation_map_method, visual_method, image_input, question_input, und_seed_input, top_p, temperature, target_token_idx, 
-                visualization_layers_min, visualization_layers_max, focus, response_type, chart_type],
+                visualization_layers_min, visualization_layers_max, focus, response_type, chart_type, accumulate_method],
         outputs=[understanding_output, activation_map_output, understanding_target_token_decoded_output]
     )
     

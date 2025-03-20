@@ -196,7 +196,7 @@ class Visualization:
             cam_sum_lst.append(cam_sum)
         return cam_sum_lst, grid_size
             
-    def process_multiple_withsum(self, cams, start_idx, images_seq_mask, normalize=False):
+    def process_multiple_acc(self, cams, start_idx, images_seq_mask, normalize=False, accumulate_method="sum"):
         cam_sum_lst = []
         for i in range(start_idx, cams[0].shape[1]):
             cam_sum = None
@@ -217,7 +217,10 @@ class Visualization:
                 if cam_sum == None:
                     cam_sum = cam_reshaped
                 else:
-                    cam_sum += cam_reshaped
+                    if accumulate_method == "sum":
+                        cam_sum += cam_reshaped
+                    elif accumulate_method == "mult":
+                        cam_sum *= cam_reshaped + 1
 
             cam_sum = (cam_sum - cam_sum.min()) / (cam_sum.max() - cam_sum.min())
             cam_sum_lst.append(cam_sum)
@@ -316,7 +319,7 @@ class VisualizationJanus(Visualization):
             self.gradients = [layer.get_attn_gradients() for layer in self.target_layers]
     
     @spaces.GPU(duration=120)
-    def generate_cam(self, input_tensor, tokenizer, temperature, top_p, target_token_idx=None, visual_method="softmax", focus="Visual Encoder"):
+    def generate_cam(self, input_tensor, tokenizer, temperature, top_p, target_token_idx=None, visual_method="softmax", focus="Visual Encoder", accumulate_method="sum"):
         
         self.setup_grads()
 
@@ -368,7 +371,7 @@ class VisualizationLLaVA(Visualization):
         self.gradients = [layer.get_attn_gradients() for layer in self.target_layers]
 
     @spaces.GPU(duration=120)
-    def generate_cam(self, inputs, tokenizer, temperature, top_p, target_token_idx=None, visual_method="softmax", focus="Visual Encoder"):
+    def generate_cam(self, inputs, tokenizer, temperature, top_p, target_token_idx=None, visual_method="softmax", focus="Visual Encoder", accumulate_method="sum"):
         
         self.setup_grads()
         self.forward_backward(inputs)
@@ -388,7 +391,7 @@ class VisualizationLLaVA(Visualization):
         # Aggregate activations and gradients from ALL layers
         start_idx = last + 1
         cams = self.attn_guided_cam()
-        cam_sum_lst, grid_size = self.process_multiple_withsum(cams, start_idx, images_seq_mask)
+        cam_sum_lst, grid_size = self.process_multiple_acc(cams, start_idx, images_seq_mask, accumulate_method=accumulate_method)
 
         return cam_sum_lst, grid_size, start_idx
 
@@ -424,7 +427,7 @@ class VisualizationChartGemma(Visualization):
             self.gradients = [layer.get_attn_gradients() for layer in self.target_layers]
     
     @spaces.GPU(duration=120)
-    def generate_cam(self, inputs, tokenizer, temperature, top_p, target_token_idx=None, visual_method="softmax", focus="Visual Encoder"):
+    def generate_cam(self, inputs, tokenizer, temperature, top_p, target_token_idx=None, visual_method="softmax", focus="Visual Encoder", accumulate_method="sum"):
         
         # Forward pass
         self.setup_grads()
@@ -453,7 +456,7 @@ class VisualizationChartGemma(Visualization):
         elif focus == "Language Model":
 
             cams = self.attn_guided_cam()
-            cam_sum_lst, grid_size = self.process_multiple_withsum(cams, start_idx, images_seq_mask)
+            cam_sum_lst, grid_size = self.process_multiple_acc(cams, start_idx, images_seq_mask, accumulate_method=accumulate_method)
 
             # cams shape: [layers, 1, seq_len, seq_len]
             
