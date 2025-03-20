@@ -64,9 +64,7 @@ def multimodal_understanding(model_type,
         torch.cuda.ipc_collect()
 
     # set seed
-    torch.manual_seed(seed)
-    np.random.seed(seed)
-    torch.cuda.manual_seed(seed) if torch.cuda.is_available() else None
+    set_seed(model_seed=seed)
 
     input_text_decoded = ""
     answer = ""
