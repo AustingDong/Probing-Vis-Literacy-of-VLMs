@@ -10,8 +10,20 @@ def set_seed(model_seed = 42):
     np.random.seed(model_seed)
     torch.cuda.manual_seed(model_seed) if torch.cuda.is_available() else None
 
+def clean():
+    # Empty CUDA cache
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.ipc_collect()  # Frees inter-process CUDA memory
+    
+    # Empty MacOS Metal backend (if using Apple Silicon)
+    if torch.backends.mps.is_available():
+        torch.mps.empty_cache()
+
+
 def evaluate(model_type, num_eval = 10):
     for eval_idx in range(num_eval):
+        clean()
         set_seed(np.random.randint(0, 1000))
         model_utils, vl_gpt, tokenizer = None, None, None
 
@@ -61,6 +73,7 @@ if __name__ == '__main__':
     
     # models = ["ChartGemma", "Janus-Pro-1B", "Janus-Pro-7B", "LLaVA-1.5-7B"]
     # models = ["ChartGemma", "Janus-Pro-1B"]
-    models = ["Janus-Pro-7B", "LLaVA-1.5-7B"]
+    # models = ["Janus-Pro-7B", "LLaVA-1.5-7B"]
+    models = ["LLaVA-1.5-7B"]
     for model_type in models:
         evaluate(model_type=model_type, num_eval=10)
