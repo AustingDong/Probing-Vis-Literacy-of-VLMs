@@ -58,7 +58,7 @@ def multimodal_understanding(model_type,
                              activation_map_method, 
                              visual_method, 
                              image, question, seed, top_p, temperature, target_token_idx,
-                             visualization_layer_min, visualization_layer_max, focus, response_type, chart_type, accumulate_method):
+                             visualization_layer_min, visualization_layer_max, focus, response_type, chart_type, accumulate_method, test_selector):
     # Clear CUDA cache before generating
     gc.collect()
     if torch.cuda.is_available():
@@ -191,7 +191,7 @@ def multimodal_understanding(model_type,
 
     # Collect Results
     RESULTS_ROOT = "./results"
-    FILES_ROOT = f"{RESULTS_ROOT}/{model_name}/{focus}/{visual_method}/{chart_type}/layer{visualization_layer_min}-{visualization_layer_max}/{'all_tokens' if target_token_idx == -1 else f'--{input_ids_decoded[start + target_token_idx]}--'}"
+    FILES_ROOT = f"{RESULTS_ROOT}/{model_name}/{focus}/{visual_method}/{test_selector}/{chart_type}/layer{visualization_layer_min}-{visualization_layer_max}/{'all_tokens' if target_token_idx == -1 else f'--{input_ids_decoded[start + target_token_idx]}--'}"
     os.makedirs(FILES_ROOT, exist_ok=True)
     
     for i, cam_p in enumerate(cam):
@@ -350,7 +350,19 @@ def focus_change(focus):
             return res
 
 
-
+def test_change(test_selector):
+    if test_selector == "mini-VLAT":
+        return gr.Dataset(
+                samples=mini_VLAT_questions,
+            )
+    elif test_selector == "VLAT":
+        return gr.Dataset(
+                samples=VLAT_questions,
+            )
+    else:
+        return gr.Dataset(
+                samples=VLAT_old_questions,
+            )
 
 
 with gr.Blocks() as demo:
@@ -368,6 +380,7 @@ with gr.Blocks() as demo:
 
         with gr.Column():
             model_selector = gr.Dropdown(choices=["Clip", "ChartGemma-3B", "Janus-Pro-1B", "Janus-Pro-7B", "LLaVA-1.5-7B"], value="Clip", label="model")
+            test_selector = gr.Dropdown(choices=["mini-VLAT", "VLAT", "VLAT-old"], value="mini-VLAT", label="test")
             question_input = gr.Textbox(label="Input Prompt")
             und_seed_input = gr.Number(label="Seed", precision=0, value=42)
             top_p = gr.Slider(minimum=0, maximum=1, value=0.95, step=0.05, label="top_p")
@@ -422,10 +435,14 @@ with gr.Blocks() as demo:
 
     examples_inpainting = gr.Examples(
         label="Multimodal Understanding examples",
-        # examples=mini_VLAT_questions,
-        examples=VLAT_questions,
+        examples=mini_VLAT_questions,
         inputs=[chart_type, question_input, image_input],
     )
+
+    test_selector.change(
+        fn=test_change, 
+        inputs=test_selector,
+        outputs=examples_inpainting.dataset)
     
 
 
@@ -433,7 +450,7 @@ with gr.Blocks() as demo:
     understanding_button.click(
         multimodal_understanding,
         inputs=[model_selector, activation_map_method, visual_method, image_input, question_input, und_seed_input, top_p, temperature, target_token_idx, 
-                visualization_layers_min, visualization_layers_max, focus, response_type, chart_type, accumulate_method],
+                visualization_layers_min, visualization_layers_max, focus, response_type, chart_type, accumulate_method, test_selector],
         outputs=[understanding_output, activation_map_output, understanding_target_token_decoded_output]
     )
     

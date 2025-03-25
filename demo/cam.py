@@ -534,7 +534,7 @@ class AttentionGuidedCAMChartGemma(AttentionGuidedCAM):
 
         elif focus == "Language Model":
             self.model.zero_grad()
-            # print(outputs_raw)
+            print("logits shape:", outputs_raw.logits.shape)
             # loss = outputs_raw.logits.max(dim=-1).values.sum()
             if class_idx == -1:
                 loss = outputs_raw.logits.max(dim=-1).values.sum()

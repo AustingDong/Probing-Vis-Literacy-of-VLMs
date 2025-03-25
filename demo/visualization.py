@@ -82,8 +82,8 @@ class Visualization:
             
             grad_weights = grad.mean(dim=-1, keepdim=True)
             
-            print("act shape", act.shape)
-            print("grad_weights shape", grad_weights.shape)
+            # print("act shape", act.shape)
+            # print("grad_weights shape", grad_weights.shape)
             
             # cam = (act * grad_weights).sum(dim=-1)
             cam, _ = (act * grad_weights).max(dim=-1)
@@ -132,8 +132,8 @@ class Visualization:
         
         cams = []
         for act, grad in zip(self.activations, self.gradients):
-            print("act shape", act.shape)
-            print("grad shape", grad.shape)
+            # print("act shape", act.shape)
+            # print("grad shape", grad.shape)
             
             grad = F.relu(grad)
 
@@ -160,7 +160,7 @@ class Visualization:
 
         num_patches = cam_sum.shape[-1]  # Last dimension of CAM output
         grid_size = int(num_patches ** 0.5)
-        print(f"Detected grid size: {grid_size}x{grid_size}")
+        # print(f"Detected grid size: {grid_size}x{grid_size}")
         cam_sum = cam_sum.view(grid_size, grid_size).detach()
 
         # Normalize
@@ -184,10 +184,10 @@ class Visualization:
         for i in range(start, cam_sum_raw.shape[1]):
             cam_sum = cam_sum_raw[:, i, :] # shape: [1: seq_len]
             cam_sum = cam_sum[images_seq_mask].unsqueeze(0) # shape: [1, img_seq_len]
-            print("cam_sum shape: ", cam_sum.shape)
+            # print("cam_sum shape: ", cam_sum.shape)
             num_patches = cam_sum.shape[-1]  # Last dimension of CAM output
             grid_size = int(num_patches ** 0.5)
-            print(f"Detected grid size: {grid_size}x{grid_size}")
+            # print(f"Detected grid size: {grid_size}x{grid_size}")
 
             cam_sum = cam_sum.view(grid_size, grid_size)
             if normalize:
@@ -418,6 +418,7 @@ class VisualizationChartGemma(Visualization):
         
         elif focus == "Language Model":
             self.model.zero_grad()
+            print("logits shape:", outputs_raw.logits.shape)
             if target_token_idx == -1:
                 loss = outputs_raw.logits.max(dim=-1).values.sum()
             else:
@@ -486,15 +487,17 @@ def generate_gradcam(
     Generates a Grad-CAM heatmap overlay on top of the input image.
 
     Parameters:
-      attributions (torch.Tensor): A tensor of shape (C, H, W) representing the
-        intermediate activations or gradients at the target layer.
-      image (PIL.Image): The original image.
-      alpha (float): The blending factor for the heatmap overlay (default 0.5).
-      colormap (int): OpenCV colormap to apply (default cv2.COLORMAP_JET).
-      aggregation (str): How to aggregate across channels; either 'mean' or 'sum'.
+        cam (torch.Tensor): A tensor of shape (C, H, W) representing the
+            intermediate activations or gradients at the target layer.
+        image (PIL.Image): The original image.
+        size (tuple): The desired size of the heatmap overlay (default (384, 384)).
+        alpha (float): The blending factor for the heatmap overlay (default 0.5).
+        colormap (int): OpenCV colormap to apply (default cv2.COLORMAP_JET).
+        aggregation (str): How to aggregate across channels; either 'mean' or 'sum'.
+        normalize (bool): Whether to normalize the heatmap (default False).
 
     Returns:
-      PIL.Image: The image overlaid with the Grad-CAM heatmap.
+        PIL.Image: The image overlaid with the Grad-CAM heatmap.
     """
     # print("Generating Grad-CAM with shape:", cam.shape)
 
