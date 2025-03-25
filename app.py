@@ -6,7 +6,9 @@ from janus.utils.io import load_pil_images
 from demo.visualization import generate_gradcam, VisualizationJanus, VisualizationClip, VisualizationChartGemma, VisualizationLLaVA
 from demo.model_utils import Clip_Utils, Janus_Utils, LLaVA_Utils, ChartGemma_Utils, add_title_to_image
 from demo.modified_attn import ModifiedLlamaAttention, ModifiedGemmaAttention
-
+from questions.mini_VLAT import mini_VLAT_questions
+from questions.VLAT_old import VLAT_old_questions
+from questions.VLAT import VLAT_questions
 import numpy as np
 import matplotlib.pyplot as plt
 import gc
@@ -411,12 +413,6 @@ with gr.Blocks() as demo:
             ]
         )
 
-        # response_type.change(
-        #     fn = response_type_change,
-        #     inputs = response_type,
-        #     outputs = [activation_map_method]
-        # )
-
         
 
     understanding_button = gr.Button("Submit")
@@ -426,81 +422,8 @@ with gr.Blocks() as demo:
 
     examples_inpainting = gr.Examples(
         label="Multimodal Understanding examples",
-        examples=[
-
-            [
-                "LineChart",
-                "What was the price of a barrel of oil in February 2020?", 
-                "images/LineChart.png" 
-            ],
-
-            [
-                "BarChart",
-                "What is the average internet speed in Japan?",
-                "images/BarChart.png"
-            ],
-
-            [
-                "StackedBar",
-                "What is the cost of peanuts in Seoul?", 
-                "images/StackedBar.png"
-            ],
-
-            [
-                "100%StackedBar",
-                "Which country has the lowest proportion of Gold medals?", 
-                "images/Stacked100.png"
-            ],
-            
-            [
-                "PieChart",
-                "What is the approximate global smartphone market share of Samsung?",
-                "images/PieChart.png"
-            ],
-            
-            [
-                "Histogram",
-                "What distance have customers traveled in the taxi the most?", 
-                "images/Histogram.png"
-            ],
-
-            [
-                "Scatterplot",
-                "True/False: There is a negative linear relationship between the height and the weight of the 85 males.", 
-                "images/Scatterplot.png"
-            ],
-
-            [
-                "AreaChart",
-                "What was the average price of pount of coffee beans in October 2019?",
-                "images/AreaChart.png"
-            ],
-
-            [
-                "StackedArea",
-                "What was the ratio of girls named 'Isla' to girls named 'Amelia' in 2012 in the UK?", 
-                "images/StackedArea.png"
-            ],
-
-            [
-                "BubbleChart",
-                "Which city's metro system has the largest number of stations?", 
-                "images/BubbleChart.png"
-            ],
-
-            [ 
-                "Choropleth",
-                "True/False: In 2020, the unemployment rate for Washington (WA) was higher than that of Wisconsin (WI).", 
-                "images/Choropleth_New.png"
-            ],
-
-            [
-                "TreeMap",
-                "True/False: eBay is nested in the Software category.", 
-                "images/TreeMap.png"
-            ]
-            
-        ],
+        # examples=mini_VLAT_questions,
+        examples=VLAT_questions,
         inputs=[chart_type, question_input, image_input],
     )
     
