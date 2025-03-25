@@ -155,60 +155,127 @@ VLAT_questions=[
         "images/mini-VLAT/BubbleChart.png"
     ],
 
+    [
+        "AreaChart",
+        "What was the average price of pound of coffee beans in October 2019?",
+        "images/mini-VLAT/AreaChart.png"
+    ],
 
+    [
+        "AreaChart",
+        "When was the price of a pound of coffee beans at a minimum?",
+        "images/mini-VLAT/AreaChart.png"
+    ],
 
+    [
+        "AreaChart",
+        "What was the range of the price of a pound of coffee beans between January 2018 and January 2020?",
+        "images/mini-VLAT/AreaChart.png"
+    ],
 
-
+    [
+        "AreaChart",
+        "Over the first six months of 2018, the price of a pound of coffee beans was roughly falling or rising?",
+        "images/mini-VLAT/AreaChart.png"
+    ],
 
     
 
+    [ 
+        "Choropleth",
+        "In which state was the unemployment rate the highest?", 
+        "images/mini-VLAT/Choropleth_New.png"
+    ],
+
+    [ 
+        "Choropleth",
+        "What was the unemployment rate for Indiana (IN) in 2020?", 
+        "images/mini-VLAT/Choropleth_New.png"
+    ],
+
+
     [
-        "BarChart",
-        "What is the average internet speed in Japan?",
-        "images/mini-VLAT/BarChart.png"
+        "Histogram",
+        "How many people have traveled a distance between 20km and 40km?", 
+        "images/mini-VLAT/Histogram.png"
     ],
 
     [
-        "StackedBar",
-        "What is the cost of peanuts in Seoul?", 
-        "images/mini-VLAT/StackedBar.png"
+        "Histogram",
+        "True/False: More people have traveled between 10 and 20 km than between 40 and 50 km.", 
+        "images/mini-VLAT/Histogram.png"
     ],
 
     [
-        "100%StackedBar",
-        "Which country has the lowest proportion of Gold medals?", 
-        "images/mini-VLAT/Stacked100.png"
+        "Histogram",
+        "What is the most common distance customers have travelled?", 
+        "images/mini-VLAT/Histogram.png"
     ],
+
+
     
+    [
+        "TreeMap",
+        "For which website was the number of unique visitors the largest in 2020?", 
+        "images/mini-VLAT/TreeMap.png"
+    ],
+
+    [
+        "TreeMap",
+        "True/False: The number of unique visitors for Amazon was more than that of Yahoo! in 2020.", 
+        "images/mini-VLAT/TreeMap.png"
+    ],
+
+    [
+        "TreeMap",
+        "In which category is eBay nested?", 
+        "images/mini-VLAT/TreeMap.png"
+    ],
+
+
     [
         "PieChart",
         "What is the approximate global smartphone market share of Samsung?",
         "images/mini-VLAT/PieChart.png"
     ],
-    
+
     [
-        "Histogram",
-        "What distance have customers traveled in the taxi the most?", 
-        "images/mini-VLAT/Histogram.png"
+        "PieChart",
+        "Which company has the largest global market share for smart phones?",
+        "images/mini-VLAT/PieChart.png"
     ],
 
 
     [
-        "AreaChart",
-        "What was the average price of pount of coffee beans in October 2019?",
-        "images/mini-VLAT/AreaChart.png"
-    ],
-
-
-    [ 
-        "Choropleth",
-        "True/False: In 2020, the unemployment rate for Washington (WA) was higher than that of Wisconsin (WI).", 
-        "images/mini-VLAT/Choropleth_New.png"
+        "100%StackedBar",
+        "What percentage of Japan's Olympic medals are Bronze?", 
+        "images/mini-VLAT/Stacked100.png"
     ],
 
     [
-        "TreeMap",
-        "True/False: eBay is nested in the Software category.", 
-        "images/mini-VLAT/TreeMap.png"
-    ]
+        "100%StackedBar",
+        "Who has the bigger percentage of Silver medals, Japan or Great Britain?", 
+        "images/mini-VLAT/Stacked100.png"
+    ],
+
+    [
+        "100%StackedBar",
+        "Which country has the highest number (absolute number, not %) of Bronze medals?", 
+        "images/mini-VLAT/Stacked100.png"
+    ],
+
+
+
+    [
+        "BarChart",
+        "What is the range of the global internet speed?",
+        "images/mini-VLAT/BarChart.png"
+    ],
+
+    [
+        "BarChart",
+        "In how many countries is the internet speed slower than Japan?",
+        "images/mini-VLAT/BarChart.png"
+    ],
+
 ]
