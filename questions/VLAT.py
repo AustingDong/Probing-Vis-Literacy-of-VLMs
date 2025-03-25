@@ -49,7 +49,7 @@ VLAT_questions=[
 
     [
         "StackedArea",
-        "The number of girls named 'Olivia' was raising or falling from 2009 to 2012.", 
+        "The number of girls named 'Olivia' was raising or falling from 2009 to 2012?", 
         "images/mini-VLAT/StackedArea.png"
     ],
 
