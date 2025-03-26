@@ -145,7 +145,7 @@ class Visualization:
         return cams
     
     
-    def process(self, cam_sum, thresholding=True, remove_cls=True, normalize=True):
+    def process(self, cam_sum, thresholding=True, remove_cls=False, normalize=True):
 
         cam_sum = cam_sum.to(torch.float32)
 

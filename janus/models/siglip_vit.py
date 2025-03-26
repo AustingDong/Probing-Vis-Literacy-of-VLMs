@@ -655,9 +655,9 @@ def create_siglip_vit(
     else:
         layers = min(vision_cfg.layers, select_layer)
 
-    # Requre CLS token
-    vision_cfg.class_token = True
-    print("Usage Class Token: ", vision_cfg.class_token)
+    # Require CLS token
+    # vision_cfg.class_token = True
+    # print("Usage Class Token: ", vision_cfg.class_token)
     
     model = VisionTransformer(
         img_size=image_size,

@@ -256,7 +256,7 @@ class MultiModalityCausalLM(MultiModalityPreTrainedModel):
         inputs_embeds = self.language_model.get_input_embeddings()(input_ids)
 
         # replace with the image embeddings
-        images_embeds = images_embeds[:, 1:, :]
+        # images_embeds = images_embeds[:, 1:, :]
         inputs_embeds[images_seq_mask] = images_embeds[images_emb_mask]
 
         return inputs_embeds
@@ -293,7 +293,8 @@ class MultiModalityCausalLM(MultiModalityPreTrainedModel):
         inputs_embeds = self.language_model.get_input_embeddings()(input_tensor.input_ids)
         # print("input_embeddings: ", inputs_embeds)
 
-        images_embeds_rest = images_embeds[:, 1:, :]
+        # images_embeds_rest = images_embeds[:, 1:, :]
+        images_embeds_rest = images_embeds[:, :, :]
 
         # images_embeds_pooled = images_embeds.mean(dim=1)
 

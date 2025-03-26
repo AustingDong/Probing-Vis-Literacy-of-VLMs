@@ -27,7 +27,8 @@ clip_utils.init_Clip()
 model_utils, vl_gpt, tokenizer = None, None, None
 model_name = "Clip"
 language_model_max_layer = 24
-language_model_best_layer = 8
+language_model_best_layer_min = 8
+language_model_best_layer_max = 8
 vision_model_best_layer = 24
 
 def clean():
@@ -215,7 +216,7 @@ def multimodal_understanding(model_type,
 # Gradio interface
 
 def model_slider_change(model_type):
-    global model_utils, vl_gpt, tokenizer, clip_utils, model_name, language_model_max_layer, language_model_best_layer, vision_model_best_layer
+    global model_utils, vl_gpt, tokenizer, clip_utils, model_name, language_model_max_layer, language_model_best_layer_min, language_model_best_layer_max, vision_model_best_layer
     model_name = model_type
 
 
@@ -224,13 +225,6 @@ def model_slider_change(model_type):
         gr.Dropdown(choices=["Visual Encoder"], value="Visual Encoder", label="focus"),
         gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="activation map type"),
         gr.Dropdown(choices=["CLS", "max", "avg"], value="CLS", label="visual pooling method")
-    ]
-
-    visual_res = [
-        gr.Dropdown(choices=["Visualization only", "answer + visualization"], value="Visualization only", label="response_type"),
-        gr.Dropdown(choices=["Visual Encoder"], value="Visual Encoder", label="focus"),
-        gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="activation map type"),
-        gr.Dropdown(choices=["softmax", "sigmoid"], value="softmax", label="activation function")
     ]
 
     language_res = [
@@ -253,7 +247,7 @@ def model_slider_change(model_type):
         return tuple(encoder_only_res + sliders)
     
     elif model_type.split('-')[0] == "Janus":
-        
+        # best seed: 70
         clean()
         set_seed()
         model_utils = Janus_Utils()
@@ -262,13 +256,14 @@ def model_slider_change(model_type):
             layer.self_attn = ModifiedLlamaAttention(layer.self_attn)
         
         language_model_max_layer = 24
-        language_model_best_layer = 8
+        language_model_best_layer_min = 8
+        language_model_best_layer_max = 10
         
         sliders = [
-            gr.Slider(minimum=1, maximum=24, value=24, step=1, label="visualization layers min"),
-            gr.Slider(minimum=1, maximum=24, value=24, step=1, label="visualization layers max"),
+            gr.Slider(minimum=1, maximum=24, value=language_model_best_layer_min, step=1, label="visualization layers min"),
+            gr.Slider(minimum=1, maximum=24, value=language_model_best_layer_max, step=1, label="visualization layers max"),
         ]
-        return tuple(visual_res + sliders)
+        return tuple(language_res + sliders)
     
     elif model_type.split('-')[0] == "LLaVA":
         
@@ -278,11 +273,12 @@ def model_slider_change(model_type):
         version = model_type.split('-')[1]
         vl_gpt, tokenizer = model_utils.init_LLaVA(version=version)
         language_model_max_layer = 32 if version == "1.5" else 28
-        language_model_best_layer = 10
+        language_model_best_layer_min = 10
+        language_model_best_layer_max = 10
 
         sliders = [
-            gr.Slider(minimum=1, maximum=language_model_max_layer, value=language_model_best_layer, step=1, label="visualization layers min"),
-            gr.Slider(minimum=1, maximum=language_model_max_layer, value=language_model_best_layer, step=1, label="visualization layers max"),
+            gr.Slider(minimum=1, maximum=language_model_max_layer, value=language_model_best_layer_min, step=1, label="visualization layers min"),
+            gr.Slider(minimum=1, maximum=language_model_max_layer, value=language_model_best_layer_max, step=1, label="visualization layers max"),
         ]
         return tuple(language_res + sliders)
     
@@ -295,11 +291,12 @@ def model_slider_change(model_type):
             layer.self_attn = ModifiedGemmaAttention(layer.self_attn)
         language_model_max_layer = 18
         vision_model_best_layer = 19
-        language_model_best_layer = 15
+        language_model_best_layer_min = 11
+        language_model_best_layer_max = 15
 
         sliders = [
-            gr.Slider(minimum=1, maximum=language_model_best_layer, value=language_model_best_layer, step=1, label="visualization layers min"),
-            gr.Slider(minimum=1, maximum=language_model_best_layer, value=language_model_best_layer, step=1, label="visualization layers max"),
+            gr.Slider(minimum=1, maximum=language_model_max_layer, value=language_model_best_layer_min, step=1, label="visualization layers min"),
+            gr.Slider(minimum=1, maximum=language_model_max_layer, value=language_model_best_layer_max, step=1, label="visualization layers max"),
         ]
         return tuple(language_res + sliders)
 
@@ -320,15 +317,15 @@ def focus_change(focus):
         if response_type.value == "answer + visualization":
             res = (
                 gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="activation map type"),
-                gr.Slider(minimum=1, maximum=language_model_max_layer, value=language_model_best_layer, step=1, label="visualization layers min"), 
-                gr.Slider(minimum=1, maximum=language_model_max_layer, value=language_model_best_layer, step=1, label="visualization layers max")
+                gr.Slider(minimum=1, maximum=language_model_max_layer, value=language_model_best_layer_min, step=1, label="visualization layers min"), 
+                gr.Slider(minimum=1, maximum=language_model_max_layer, value=language_model_best_layer_max, step=1, label="visualization layers max")
             )
             return res
         else:
             res = (
                 gr.Dropdown(choices=["GradCAM"], value="GradCAM", label="activation map type"),
-                gr.Slider(minimum=1, maximum=language_model_max_layer, value=language_model_best_layer, step=1, label="visualization layers min"), 
-                gr.Slider(minimum=1, maximum=language_model_max_layer, value=language_model_best_layer, step=1, label="visualization layers max")
+                gr.Slider(minimum=1, maximum=language_model_max_layer, value=language_model_best_layer_min, step=1, label="visualization layers min"), 
+                gr.Slider(minimum=1, maximum=language_model_max_layer, value=language_model_best_layer_max, step=1, label="visualization layers max")
             )
             return res
 

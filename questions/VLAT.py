@@ -49,7 +49,7 @@ VLAT_questions=[
 
     [
         "StackedArea",
-        "The number of girls named 'Olivia' was raising or falling from 2009 to 2012?", 
+        "The number of girls named 'Olivia' was increasing or decreasing from 2009 to 2012?", 
         "images/mini-VLAT/StackedArea.png"
     ],
 
@@ -115,7 +115,7 @@ VLAT_questions=[
 
     [
         "LineChart",
-        "Over the course of the first quarter of 2020, the price of a barrel of oil was rising or falling?", 
+        "Over the course of the first quarter of 2020, the price of a barrel of oil was increasing or decreasing?", 
         "images/mini-VLAT/LineChart.png" 
     ],
 
@@ -175,7 +175,7 @@ VLAT_questions=[
 
     [
         "AreaChart",
-        "Over the first six months of 2018, the price of a pound of coffee beans was roughly falling or rising?",
+        "Over the first six months of 2018, the price of a pound of coffee beans was roughly decreasing or increasing?",
         "images/mini-VLAT/AreaChart.png"
     ],
 
