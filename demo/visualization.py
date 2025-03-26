@@ -406,6 +406,16 @@ class VisualizationChartGemma(Visualization):
         super().__init__(model, register=True)
         self._modify_layers()
         self._register_hooks_activations()
+
+    # def custom_loss(self, start_idx, input_ids, logits):
+    #     Q = logits.shape[1]
+    #     loss = 0
+    #     q = 0
+    #     while start_idx + q < Q - 1:
+    #         loss += F.cross_entropy(logits[0, start_idx + q], input_ids[0, start_idx + q + 1])
+    #         q += 1
+    #     return loss
+
     
     def forward_backward(self, inputs, focus, start_idx, target_token_idx, visual_method="softmax"):
         outputs_raw = self.model(**inputs, output_hidden_states=True)
@@ -421,6 +431,7 @@ class VisualizationChartGemma(Visualization):
             print("logits shape:", outputs_raw.logits.shape)
             if target_token_idx == -1:
                 loss = outputs_raw.logits.max(dim=-1).values.sum()
+                # loss = self.custom_loss(start_idx, inputs['input_ids'], outputs_raw.logits)
             else:
                 loss = outputs_raw.logits.max(dim=-1).values[0, start_idx + target_token_idx]
             loss.backward()

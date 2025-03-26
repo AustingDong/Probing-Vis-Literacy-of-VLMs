@@ -7,9 +7,9 @@ from openai import OpenAI
 from demo.model_utils import *
 from evaluate.questions import questions
 
-def set_seed(model_seed = 42):
+def set_seed(model_seed = 70):
     torch.manual_seed(model_seed)
-    np.random.seed(model_seed)
+    # np.random.seed(model_seed)
     torch.cuda.manual_seed(model_seed) if torch.cuda.is_available() else None
 
 def clean():
@@ -52,7 +52,7 @@ def evaluate(model_type, num_eval = 10):
             client = OpenAI(api_key=os.environ["GEMINI_HCI_API_KEY"], 
                             base_url="https://generativelanguage.googleapis.com/v1beta/openai/")
 
-        for question in questions:
+        for question_idx, question in enumerate(questions):
             chart_type = question[0]
             q = question[1]
             img_path = question[2]
@@ -104,8 +104,8 @@ def evaluate(model_type, num_eval = 10):
 
             else:
                 prepare_inputs = model_utils.prepare_inputs(q, image)
-                temperature = 0.9
-                top_p = 0.1
+                temperature = 0.1
+                top_p = 0.95
 
                 if model_type.split('-')[0] == "Janus":
                     inputs_embeds = model_utils.generate_inputs_embeddings(prepare_inputs)
@@ -120,7 +120,7 @@ def evaluate(model_type, num_eval = 10):
             FILES_ROOT = f"{RESULTS_ROOT}/{model_type}/{eval_idx}"
             os.makedirs(FILES_ROOT, exist_ok=True)
 
-            with open(f"{FILES_ROOT}/{chart_type}.txt", "w") as f:
+            with open(f"{FILES_ROOT}/Q{question_idx + 1}-{chart_type}.txt", "w") as f:
                 f.write(answer)
                 f.close()
 
@@ -129,8 +129,6 @@ def evaluate(model_type, num_eval = 10):
 if __name__ == '__main__':
     
     # models = ["ChartGemma", "Janus-Pro-1B", "Janus-Pro-7B", "LLaVA-1.5-7B", "GPT-4o", "Gemini-2.0-flash"]
-    # models = ["ChartGemma", "Janus-Pro-1B"]
-    # models = ["Janus-Pro-7B", "LLaVA-1.5-7B"]
-    models = ["GPT-4o", "Gemini-2.0-flash"]
+    models = ["Janus-Pro-7B"]
     for model_type in models:
         evaluate(model_type=model_type, num_eval=10)
