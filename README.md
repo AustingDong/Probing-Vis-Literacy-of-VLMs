@@ -7,6 +7,9 @@
 </div>
 
 <div align="center">
+    <a href="https://www.uw-insight-lab.com/" target="_blank">
+        <img src="https://img.shields.io/badge/UW Insight Lab-Homepage-blue" alt="UW Insight Lab" />
+    </a>
     <a href="https://huggingface.co/uw-insight-lab" target="_blank">
         <img src="https://img.shields.io/badge/HuggingFace-UW Insight Lab-yellow?logo=huggingface" alt="Hugging Face" />
     </a>
