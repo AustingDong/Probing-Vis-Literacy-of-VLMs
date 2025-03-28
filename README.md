@@ -43,7 +43,7 @@ gradio app.py
 
 ### Docker
 
-You can also run this app using Docker
+You can also run this app using Docker without setup
 
 ```shell
 docker build -t probing-vis-literacy .
