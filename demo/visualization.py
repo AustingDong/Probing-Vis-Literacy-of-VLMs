@@ -8,7 +8,6 @@ from PIL import Image
 from torch import nn
 import spaces
 from demo.modify_llama import *
-from demo.modified_attn import ModifiedLlamaAttention
 
 class Visualization:
     def __init__(self, model, register=True):
