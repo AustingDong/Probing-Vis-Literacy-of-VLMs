@@ -11,9 +11,11 @@
         <img src="https://img.shields.io/badge/HuggingFace-InsightLab-yellow?logo=huggingface" alt="Hugging Face" />
     </a>
 
+    <a href="https://github.com/AustingDong/Probing-Vis-Literacy-of-Vision-Language-Models/blob/main/LICENSE" target="_blank">
+        <img src="https://img.shields.io/github/license/AustingDong/Probing-Vis-Literacy-of-Vision-Language-Models" alt="GitHub License" />
+    </a>
 </div>
 
-![GitHub License](https://img.shields.io/github/license/AustingDong/Probing-Vis-Literacy-of-Vision-Language-Models)
 ![image](https://github.com/AustingDong/Probing-Vis-Literacy-of-Vision-Language-Models/examples/placeholder.png)
 
 ## Quick Start
