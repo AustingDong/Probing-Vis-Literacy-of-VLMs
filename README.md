@@ -25,11 +25,11 @@
     <img src="images/result_examples/chart_types_horizontal.png" alt="Example Preview" />
 </div>
 
-## 🚀Quick Start
+## 🚀 Quick Start
 
-### ⚙️Setup your local environment
+### ⚙️ Setup your local environment
 
-#### 📦Install Dependencies
+#### 📦 Install Dependencies
 
 ```shell
 pip install --no-cache-dir --user -e .
@@ -37,13 +37,13 @@ pip install --no-cache-dir --user opencv-python
 pip install --no-cache-dir --user -r /code/requirements-gradio.txt
 ```
 
-#### 🖼️Launch the Gradio App
+#### 🖼️ Launch the Gradio App
 
 ```shell
 gradio app.py
 ```
 
-### 🐋Run with Docker (No Setup Required)
+### 🐋 Run with Docker (No Setup Required)
 
 You can also build and run the app in an isolated Docker container:
 
