@@ -25,7 +25,7 @@
     <img src="images/result_examples/chart_types_horizontal.png" alt="Example Preview" />
 </div>
 
-## Setup
+## ⚙️Setup
 
 ```shell
 pip install --no-cache-dir --user -e .
@@ -33,7 +33,7 @@ pip install --no-cache-dir --user opencv-python
 pip install --no-cache-dir --user -r /code/requirements-gradio.txt
 ```
 
-## Visualize
+## 🔍Visualize
 
 ### Gradio App
 
