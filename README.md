@@ -30,7 +30,7 @@
 <details>
 <summary><h3>⚙️ Setup your local environment</h3></summary>
 
-### 📦 Install Dependencies
+### Install Dependencies
 
 ```shell
 pip install --no-cache-dir --user -e .
@@ -38,7 +38,7 @@ pip install --no-cache-dir --user opencv-python
 pip install --no-cache-dir --user -r /code/requirements-gradio.txt
 ```
 
-### 🖼️ Launch the Gradio App
+### Launch the Gradio App
 
 ```shell
 gradio app.py
