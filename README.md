@@ -16,7 +16,7 @@
 </div>
 
 <div align="center">
-    <img src="https://github.com/AustingDong/Probing-Vis-Literacy-of-Vision-Language-Models/blob/main/examples/placeholder.png" alt="Example Preview" width="600"/>
+    <img src="https://github.com/AustingDong/Probing-Vis-Literacy-of-Vision-Language-Models/blob/main/examples/placeholder.png" alt="Example Preview" />
 </div>
 
 ## Quick Start
@@ -29,13 +29,13 @@ pip install --no-cache-dir --user opencv-python
 pip install --no-cache-dir --user -r /code/requirements-gradio.txt
 ```
 
-### Run the Gradio App
+### Gradio App
 
 ```shell
 gradio app.py
 ```
 
-### Docker
+### <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" alt="Docker"/>Docker
 
 You can also run this app using Docker
 
