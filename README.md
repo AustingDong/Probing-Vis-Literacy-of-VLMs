@@ -16,21 +16,24 @@
     <a href="https://github.com/AustingDong/Probing-Vis-Literacy-of-Vision-Language-Models/blob/main/LICENSE" target="_blank">
         <img src="https://img.shields.io/github/license/AustingDong/Probing-Vis-Literacy-of-Vision-Language-Models" alt="GitHub License" />
     </a>
+    <a href="https://github.com/AustingDong/Probing-Vis-Literacy-of-Vision-Language-Models/stargazers" target="_blank">
+        <img src="https://img.shields.io/github/stars/AustingDong/Probing-Vis-Literacy-of-Vision-Language-Models?style=social" alt="GitHub Stars"/>
+    </a>
 </div>
 
 <div align="center">
     <img src="images/result_examples/chart_types_horizontal.png" alt="Example Preview" />
 </div>
 
-## Quick Start
-
-### Installation
+## Setup
 
 ```shell
 pip install --no-cache-dir --user -e .
 pip install --no-cache-dir --user opencv-python
 pip install --no-cache-dir --user -r /code/requirements-gradio.txt
 ```
+
+## Visualize
 
 ### Gradio App
 
