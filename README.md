@@ -27,9 +27,10 @@
 
 ## 🚀 Quick Start
 
-### ⚙️ Setup your local environment
+<details>
+<summary><h3>⚙️ Setup your local environment</h3></summary>
 
-#### 📦 Install Dependencies
+### 📦 Install Dependencies
 
 ```shell
 pip install --no-cache-dir --user -e .
@@ -37,13 +38,16 @@ pip install --no-cache-dir --user opencv-python
 pip install --no-cache-dir --user -r /code/requirements-gradio.txt
 ```
 
-#### 🖼️ Launch the Gradio App
+### 🖼️ Launch the Gradio App
 
 ```shell
 gradio app.py
 ```
 
-### 🐋 Run with Docker (No Setup Required)
+</details>
+
+<details>
+<summary><h3>🐋 Run with Docker (No Setup Required)</h3></summary>
 
 You can also build and run the app in an isolated Docker container:
 
@@ -51,5 +55,7 @@ You can also build and run the app in an isolated Docker container:
 docker build -t probing-vis-literacy .
 docker run -p 7860:7860 probing-vis-literacy
 ```
+
+</details>
 
 ## Citation
