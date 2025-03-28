@@ -1,5 +1,5 @@
 ---
-title: Probing-Vis-Literacy
+title: Probing-Vis-Literacy-of-VLMs
 emoji: 🐨
 colorFrom: pink
 colorTo: yellow
