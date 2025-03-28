@@ -35,7 +35,7 @@ pip install --no-cache-dir --user -r /code/requirements-gradio.txt
 gradio app.py
 ```
 
-### <i class="fa-brands fa-docker"></i>Docker
+### <i class="fa-brands fa-docker"></i> Docker
 
 You can also run this app using Docker
 
