@@ -10,5 +10,4 @@ pinned: false
 license: mit
 ---
 
-<!-- Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference -->
-## Probing Vis Literacy of Vision Language Models: the Good, the Bad, and the Ugly ##
+Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
