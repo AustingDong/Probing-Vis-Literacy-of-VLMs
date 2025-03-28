@@ -1,16 +1,6 @@
----
-title: Probing-Vis-Literacy-of-VLMs
-emoji: 🐨
-colorFrom: pink
-colorTo: yellow
-sdk: gradio
-sdk_version: 5.20.0
-app_file: app.py
-pinned: false
-license: mit
----
 # Probing Vis Literacy of Vision Language Models: the Good, the Bad, and the Ugly
 
+[![Hugging Face](https://img.shields.io/badge/HuggingFace-InsightLab-yellow?logo=huggingface)](https://huggingface.co/uw-insight-lab)
 ![GitHub License](https://img.shields.io/github/license/AustingDong/Probing-Vis-Literacy-of-Vision-Language-Models)
 ![image](https://github.com/AustingDong/Probing-Vis-Literacy-of-Vision-Language-Models/examples/placeholder.png)
 
