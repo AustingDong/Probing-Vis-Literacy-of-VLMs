@@ -25,7 +25,7 @@ class Visualization:
             self.hooks.append(layer.register_backward_hook(self._backward_hook))
 
     def _forward_hook(self, module, input, output):
-        print("forward_hook: self_attn_input: ", input)
+        # print("forward_hook: self_attn_input: ", input)
         self.activations.append(output)
 
     def _backward_hook(self, module, grad_in, grad_out):
@@ -42,12 +42,12 @@ class Visualization:
             layer.get_attn_map = types.MethodType(get_attn_map, layer)
 
     def _forward_activate_hooks(self, module, input, output):
-        print("forward_activate_hool: module: ", module)
-        print("forward_activate_hook: self_attn_input: ", input)
+        # print("forward_activate_hool: module: ", module)
+        # print("forward_activate_hook: self_attn_input: ", input)
 
         attn_output, attn_weights = output  # Unpack outputs
-        print("attn_output shape:", attn_output.shape)
-        print("attn_weights shape:", attn_weights.shape)
+        # print("attn_output shape:", attn_output.shape)
+        # print("attn_weights shape:", attn_weights.shape)
         module.save_attn_map(attn_weights)
         attn_weights.register_hook(module.save_attn_gradients)
 
@@ -137,8 +137,10 @@ class Visualization:
             
             grad = F.relu(grad)
 
+            # cam = act
             # cam = grad
             cam = act * grad # shape: [1, heads, seq_len, seq_len]
+
             cam = cam.sum(dim=1) # shape: [1, seq_len, seq_len]
             cam = cam.to(torch.float32).detach().cpu()
             cams.append(cam)
@@ -187,7 +189,6 @@ class Visualization:
             # print("cam_sum shape: ", cam_sum.shape)
             num_patches = cam_sum.shape[-1]  # Last dimension of CAM output
             grid_size = int(num_patches ** 0.5)
-            # print(f"Detected grid size: {grid_size}x{grid_size}")
 
             cam_sum = cam_sum.view(grid_size, grid_size)
             if normalize:
@@ -207,7 +208,6 @@ class Visualization:
 
                 num_patches = cam_l_i.shape[-1]  # Last dimension of CAM output
                 grid_size = int(num_patches ** 0.5)
-                # print(f"Detected grid size: {grid_size}x{grid_size}")
 
                 # Fix the reshaping step dynamically
                 cam_reshaped = cam_l_i.view(grid_size, grid_size)
@@ -258,7 +258,6 @@ class VisualizationClip(Visualization):
         
     @spaces.GPU(duration=120)
     def generate_cam(self, input_tensor, target_token_idx=None, visual_method="CLS"):
-        """ Generates Grad-CAM heatmap for ViT. """
         self.setup_grads()
         # Forward Backward pass
         output_full = self.forward_backward(input_tensor, visual_method, target_token_idx)
@@ -301,9 +300,13 @@ class VisualizationJanus(Visualization):
     def forward_backward(self, input_tensor, tokenizer, temperature, top_p, target_token_idx=None, visual_method="softmax", focus="Visual Encoder"):
         # Forward
         image_embeddings, inputs_embeddings, outputs = self.model(input_tensor, tokenizer, temperature, top_p)
-        input_ids = input_tensor.input_ids
+        print(input_tensor.keys())
+        input_ids = input_tensor["input_ids"]
         start_idx = 620
         self.model.zero_grad()
+
+        
+        
         if focus == "Visual Encoder":
             loss = outputs.logits.max(dim=-1).values[0, start_idx + target_token_idx]
             loss.backward()
@@ -335,11 +338,15 @@ class VisualizationJanus(Visualization):
 
         elif focus == "Language Model":
             
-            cam_sum = self.grad_cam_llm(mean_inside=True)
+            # cam_sum = self.grad_cam_llm(mean_inside=True)
             
-            images_seq_mask = input_tensor.images_seq_mask
+            images_seq_mask = input_tensor.images_seq_mask[0].detach().cpu().tolist()
             
-            cam_sum_lst, grid_size = self.process_multiple(cam_sum, start_idx, images_seq_mask)
+            # cam_sum_lst, grid_size = self.process_multiple(cam_sum, start_idx, images_seq_mask)
+
+            cams = self.attn_guided_cam()
+            cam_sum_lst, grid_size = self.process_multiple_acc(cams, start_idx, images_seq_mask, accumulate_method=accumulate_method)
+
 
             return cam_sum_lst, grid_size, start_idx
 
@@ -407,15 +414,6 @@ class VisualizationChartGemma(Visualization):
         self._modify_layers()
         self._register_hooks_activations()
 
-    # def custom_loss(self, start_idx, input_ids, logits):
-    #     Q = logits.shape[1]
-    #     loss = 0
-    #     q = 0
-    #     while start_idx + q < Q - 1:
-    #         loss += F.cross_entropy(logits[0, start_idx + q], input_ids[0, start_idx + q + 1])
-    #         q += 1
-    #     return loss
-
     
     def forward_backward(self, inputs, focus, start_idx, target_token_idx, visual_method="softmax"):
         outputs_raw = self.model(**inputs, output_hidden_states=True)
@@ -429,9 +427,11 @@ class VisualizationChartGemma(Visualization):
         elif focus == "Language Model":
             self.model.zero_grad()
             print("logits shape:", outputs_raw.logits.shape)
+            print("start_idx:", start_idx)
             if target_token_idx == -1:
-                loss = outputs_raw.logits.max(dim=-1).values.sum()
-                # loss = self.custom_loss(start_idx, inputs['input_ids'], outputs_raw.logits)
+                logits_prob = F.softmax(outputs_raw.logits, dim=-1)
+                loss = logits_prob.max(dim=-1).values.sum()
+
             else:
                 loss = outputs_raw.logits.max(dim=-1).values[0, start_idx + target_token_idx]
             loss.backward()
@@ -495,7 +495,7 @@ def generate_gradcam(
     normalize=False
 ):
     """
-    Generates a Grad-CAM heatmap overlay on top of the input image.
+    Generates a heatmap overlay on top of the input image.
 
     Parameters:
         cam (torch.Tensor): A tensor of shape (C, H, W) representing the
@@ -508,9 +508,8 @@ def generate_gradcam(
         normalize (bool): Whether to normalize the heatmap (default False).
 
     Returns:
-        PIL.Image: The image overlaid with the Grad-CAM heatmap.
+        PIL.Image: The image overlaid with the heatmap.
     """
-    # print("Generating Grad-CAM with shape:", cam.shape)
 
     if normalize:
         cam_min, cam_max = cam.min(), cam.max()

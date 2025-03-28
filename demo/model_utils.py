@@ -74,14 +74,14 @@ class Janus_Utils(Model_Utils):
         return self.vl_gpt, self.tokenizer
     
     @spaces.GPU(duration=120)
-    def prepare_inputs(self, question, image):
+    def prepare_inputs(self, question, image, answer=None):
         conversation = [
             {
                 "role": "<|User|>",
                 "content": f"<image_placeholder>\n{question}",
                 "images": [image],
             },
-            {"role": "<|Assistant|>", "content": ""},
+            {"role": "<|Assistant|>", "content": answer if answer else ""}
         ]
         
         pil_images = [Image.fromarray(image)]
@@ -152,16 +152,33 @@ class LLaVA_Utils(Model_Utils):
         return self.vl_gpt, self.tokenizer
     
     @spaces.GPU(duration=120)
-    def prepare_inputs(self, question, image):
-        conversation = [
-            {
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": question},
-                    {"type": "image"},
-                ],
-            },
-        ]
+    def prepare_inputs(self, question, image, answer=None):
+        if answer:
+            conversation = [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": question},
+                        {"type": "image"},
+                    ],
+                },
+                {
+                    "role": "assistant",
+                    "content": [
+                        {"type": "text", "text": answer},
+                    ],
+                }
+            ]
+        else:
+            conversation = [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": question},
+                        {"type": "image"},
+                    ],
+                },
+            ]
         
         prompt = self.processor.apply_chat_template(conversation, add_generation_prompt=True)
         pil_images = [Image.fromarray(image).resize((384, 384))]
