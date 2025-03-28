@@ -1,6 +1,6 @@
 # Probing Vis Literacy of Vision Language Models: the Good, the Bad, and the Ugly
 
-![Endpoint Badge](https://img.shields.io/endpoint?style=flat&label=Hugging%20Face&color=rgba(78%2C%20148%2C%20255%2C%200.6))
+[![Hugging Face](https://img.shields.io/badge/HuggingFace-AustingDong-yellow?logo=huggingface)](https://huggingface.co/AustingDong)
 ![GitHub License](https://img.shields.io/github/license/AustingDong/Probing-Vis-Literacy-of-Vision-Language-Models)
 ![image](https://github.com/AustingDong/Probing-Vis-Literacy-of-Vision-Language-Models/examples/placeholder.png)
 
