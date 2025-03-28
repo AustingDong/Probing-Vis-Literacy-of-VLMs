@@ -16,7 +16,7 @@
 </div>
 
 <div align="center">
-    <img src="images/result_examples/chart_types_horizontal.pdf" alt="Example Preview" />
+    <img src="images/result_examples/chart_types_horizontal.png" alt="Example Preview" />
 </div>
 
 ## Quick Start
