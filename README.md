@@ -1,5 +1,5 @@
 ---
-title: Multimodal Understanding
+title: Probing-Vis-Literacy
 emoji: 🐨
 colorFrom: pink
 colorTo: yellow
@@ -10,4 +10,5 @@ pinned: false
 license: mit
 ---
 
-Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
+<!-- Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference -->
+## Probing Vis Literacy of Vision Language Models: the Good, the Bad, and the Ugly ##
