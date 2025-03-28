@@ -35,7 +35,5 @@ COPY --chown=user ./images /home/user/app/images
 RUN pip install --no-cache-dir --user -e .
 RUN pip install --no-cache-dir --user opencv-python
 RUN pip install --no-cache-dir --user -r /code/requirements-gradio.txt
-RUN ls -l /home/user/app/images/
 
 CMD ["python", "app.py"]
-
