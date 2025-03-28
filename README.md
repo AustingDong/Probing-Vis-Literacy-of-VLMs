@@ -1,6 +1,18 @@
-# Probing Vis Literacy of Vision Language Models: the Good, the Bad, and the Ugly
+<!-- markdownlint-disable first-line-h1 -->
+<!-- markdownlint-disable html -->
+<!-- markdownlint-disable no-duplicate-header -->
 
-[![Hugging Face](https://img.shields.io/badge/HuggingFace-InsightLab-yellow?logo=huggingface)](https://huggingface.co/uw-insight-lab)
+<div align="center">
+    <h1>Probing Vis Literacy of Vision Language Models: the Good, the Bad, and the Ugly</h1>
+</div>
+
+<div align="center">
+    <a href="https://huggingface.co/uw-insight-lab" target="_blank">
+        <img src="https://img.shields.io/badge/HuggingFace-InsightLab-yellow?logo=huggingface" alt="Hugging Face" />
+    </a>
+
+</div>
+
 ![GitHub License](https://img.shields.io/github/license/AustingDong/Probing-Vis-Literacy-of-Vision-Language-Models)
 ![image](https://github.com/AustingDong/Probing-Vis-Literacy-of-Vision-Language-Models/examples/placeholder.png)
 
