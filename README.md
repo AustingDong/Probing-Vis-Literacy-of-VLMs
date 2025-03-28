@@ -8,7 +8,7 @@
 
 <div align="center">
     <a href="https://huggingface.co/uw-insight-lab" target="_blank">
-        <img src="https://img.shields.io/badge/HuggingFace-Insight Lab-yellow?logo=huggingface" alt="Hugging Face" />
+        <img src="https://img.shields.io/badge/HuggingFace-UW Insight Lab-yellow?logo=huggingface" alt="Hugging Face" />
     </a>
     <a href="https://github.com/AustingDong/Probing-Vis-Literacy-of-Vision-Language-Models/blob/main/LICENSE" target="_blank">
         <img src="https://img.shields.io/github/license/AustingDong/Probing-Vis-Literacy-of-Vision-Language-Models" alt="GitHub License" />
