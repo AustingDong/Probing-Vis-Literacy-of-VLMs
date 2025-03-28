@@ -16,7 +16,7 @@
 </div>
 
 <div align="center">
-    <img src="https://github.com/AustingDong/Probing-Vis-Literacy-of-Vision-Language-Models/blob/main/examples/placeholder.png" alt="Example Preview" />
+    <img src="examples/placeholder.png" alt="Example Preview" />
 </div>
 
 ## Quick Start
