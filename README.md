@@ -58,4 +58,13 @@ docker run -p 7860:7860 probing-vis-literacy
 
 </details>
 
+## 🧭 App Guide
+
+| Widget | Description |
+|--------|-------------|
+| `Upload Image` | Upload an image to be analyzed by the model. |
+| `Question Box` | Type a question about the image/chart, e.g., "What does this chart represent?" |
+| `Submit Button` | Run the model on the input and get an answer. |
+| `Output Box` | Displays the model's answer or explanation. |
+
 ## Citation
