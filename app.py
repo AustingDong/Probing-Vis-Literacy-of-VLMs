@@ -258,7 +258,7 @@ with gr.Blocks() as demo:
         activation_map_output = gr.Gallery(label="Visualization", height=500, columns=1, preview=True)
 
     with gr.Row():
-        chart_type = gr.Textbox(label="Chart Type")
+        question_input = gr.Textbox(label="Question")
         understanding_output = gr.Textbox(label="Answer")
 
     with gr.Row():
@@ -266,7 +266,7 @@ with gr.Blocks() as demo:
         with gr.Column():
             model_selector = gr.Dropdown(choices=["ChartGemma-3B", "Janus-Pro-1B", "Janus-Pro-7B", "LLaVA-1.5-7B"], value="ChartGemma-3B", label="model")
             test_selector = gr.Dropdown(choices=["mini-VLAT", "VLAT", "VLAT-old"], value="mini-VLAT", label="test")
-            question_input = gr.Textbox(label="Input Prompt")
+            chart_type = gr.Textbox(label="Chart Type")
             und_seed_input = gr.Number(label="Seed", precision=0, value=42)
             top_p = gr.Slider(minimum=0, maximum=1, value=0.95, step=0.05, label="top_p")
             temperature = gr.Slider(minimum=0, maximum=1, value=0.1, step=0.05, label="temperature")

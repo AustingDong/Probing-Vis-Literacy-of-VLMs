@@ -58,13 +58,23 @@ docker run -p 7860:7860 probing-vis-literacy
 
 </details>
 
-## 🧭 App Guide
+<div align="center">
+
+### 🧭 App Guide
 
 | Widget | Description |
 |--------|-------------|
-| `Upload Image` | Upload an image to be analyzed by the model. |
-| `Question Box` | Type a question about the image/chart, e.g., "What does this chart represent?" |
-| `Submit Button` | Run the model on the input and get an answer. |
-| `Output Box` | Displays the model's answer or explanation. |
+| `model` | Select the Vision-Language Model (VLM) to evaluate: `ChartGemma`, `Janus-Pro-1B`, `Janus-Pro-7B`, `LLaVA-1.5-7B`. |
+| `test` | Choose the type of visual literacy test to perform. |
+| `seed` | Set the random seed for reproducibility. |
+| `top_p` | Nucleus sampling parameter that limits sampling to the most probable tokens with cumulative probability `p`. |
+| `temperature` | Sampling temperature to control randomness in output generation. |
+| `target_token_idx` | Index of the token in the question to be evaluated (used for visualization). |
+| `response_type` | Output format: `visualization only` or `answer + visualization`. |
+| `focus` | Determines which part of the response is visualized: `question` only or `question + answer`. |
+| `visualization type` | Currently supports `AG-CAM`; may support more methods in future extensions. |
+| `layers accumulate method` | Method to combine attention across layers: `add` or `multiply`. |
+| `activation function` | Activation function used in attention visualization: `softmax` or `sigmoid`. |
+| `visualization layers min/max` | Set the range (min/max) of transformer layers used for visualization. |
 
-## Citation
+</div>
