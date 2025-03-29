@@ -75,6 +75,6 @@ docker run -p 7860:7860 probing-vis-literacy
 | `visualization type` | Currently supports `AG-CAM`; may support more methods in future extensions. |
 | `layers accumulate method` | Method to combine attention across layers: `add` or `multiply`. |
 | `activation function` | Activation function used in attention visualization: `softmax` or `sigmoid`. |
-| `visualization layers` | Set the range (min/max) of transformer layers used for visualization. |
+| `visualization layers min/max` | Set the range (min/max) of transformer layers used for visualization. |
 
 </div>
