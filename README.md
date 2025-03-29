@@ -78,3 +78,5 @@ docker run -p 7860:7860 probing-vis-literacy
 | `visualization layers min/max` | Set the range (min/max) of transformer layers used for visualization. |
 
 </div>
+
+### Citations
