@@ -58,7 +58,7 @@ docker run -p 7860:7860 probing-vis-literacy
 
 </details>
 
-### 🧭 App Guide
+## 🧭 App Guide
 
 <div align="center">
 
@@ -79,4 +79,4 @@ docker run -p 7860:7860 probing-vis-literacy
 
 </div>
 
-### Citations
+## Citations
