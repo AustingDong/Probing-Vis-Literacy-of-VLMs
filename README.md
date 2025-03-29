@@ -72,7 +72,7 @@ docker run -p 7860:7860 probing-vis-literacy
 | `target_token_idx` | Index of the token in the question to be evaluated (used for visualization). |
 | `response_type` | Output format: `visualization only` or `answer + visualization`. |
 | `focus` | Determines which part of the response is visualized: `question` only or `question + answer`. |
-| `visualization type` | Currently supports `AG-CAM`; may support more methods in future extensions. |
+| `visualization type` | Currently supports `AG-CAM`, may support more methods in future extensions. |
 | `layers accumulate method` | Method to combine attention across layers: `add` or `multiply`. |
 | `activation function` | Activation function used in attention visualization: `softmax` or `sigmoid`. |
 | `visualization layers min/max` | Set the range (min/max) of transformer layers used for visualization. |
