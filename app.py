@@ -275,7 +275,7 @@ with gr.Blocks() as demo:
         
         with gr.Column():
             response_type = gr.Dropdown(choices=["Visualization only", "answer + visualization"], value="answer + visualization", label="response_type")
-            focus = gr.Dropdown(choices=["question", "question + answer"], value="question + answer", label="focus")
+            focus = gr.Dropdown(choices=["question", "question + answer"], value="question", label="focus")
             activation_map_method = gr.Dropdown(choices=["AG-CAM"], value="AG-CAM", label="visualization type")
             accumulate_method = gr.Dropdown(choices=["sum", "mult"], value="sum", label="layers accumulate method")
             visual_method = gr.Dropdown(choices=["softmax", "sigmoid"], value="softmax", label="activation function")

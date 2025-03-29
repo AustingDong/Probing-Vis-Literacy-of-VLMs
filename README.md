@@ -58,10 +58,9 @@ docker run -p 7860:7860 probing-vis-literacy
 
 </details>
 
-<div align="center">
-
 ### 🧭 App Guide
 
+<div align="center">
 | Widget | Description |
 |--------|-------------|
 | `model` | Select the Vision-Language Model (VLM) to evaluate: `ChartGemma`, `Janus-Pro-1B`, `Janus-Pro-7B`, `LLaVA-1.5-7B`. |
@@ -76,5 +75,4 @@ docker run -p 7860:7860 probing-vis-literacy
 | `layers accumulate method` | Method to combine attention across layers: `add` or `multiply`. |
 | `activation function` | Activation function used in attention visualization: `softmax` or `sigmoid`. |
 | `visualization layers min/max` | Set the range (min/max) of transformer layers used for visualization. |
-
 </div>
