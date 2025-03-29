@@ -25,6 +25,8 @@
     <img src="images/result_examples/chart_types_horizontal.png" alt="Example Preview" />
 </div>
 
+## Introduction
+
 ## 🚀 Quick Start
 
 <details>
@@ -34,7 +36,6 @@
 
 ```shell
 pip install --no-cache-dir --user -e .
-pip install --no-cache-dir --user opencv-python
 pip install --no-cache-dir --user -r /code/requirements-gradio.txt
 ```
 
@@ -79,4 +80,6 @@ docker run -p 7860:7860 probing-vis-literacy
 
 </div>
 
-## Citations
+## Citation
+
+## Acknowledgements

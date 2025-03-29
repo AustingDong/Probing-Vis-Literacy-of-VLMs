@@ -19,6 +19,8 @@ dependencies = [
     "sentencepiece",
     "attrdict",
     "einops",
+    "opencv-python",
+    "spaces"
 ]
 
 [project.optional-dependencies]

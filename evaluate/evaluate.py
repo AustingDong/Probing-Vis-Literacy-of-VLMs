@@ -9,7 +9,6 @@ from evaluate.questions import questions
 
 def set_seed(model_seed = 70):
     torch.manual_seed(model_seed)
-    # np.random.seed(model_seed)
     torch.cuda.manual_seed(model_seed) if torch.cuda.is_available() else None
 
 def clean():
@@ -124,11 +123,9 @@ def evaluate(model_type, num_eval = 10):
                 f.write(answer)
                 f.close()
 
-
-
 if __name__ == '__main__':
-    
-    # models = ["ChartGemma", "Janus-Pro-1B", "Janus-Pro-7B", "LLaVA-1.5-7B", "GPT-4o", "Gemini-2.0-flash"]
-    models = ["Janus-Pro-7B"]
+
+    models = ["ChartGemma", "Janus-Pro-1B", "Janus-Pro-7B", "LLaVA-1.5-7B", "GPT-4o", "Gemini-2.0-flash"]
+
     for model_type in models:
         evaluate(model_type=model_type, num_eval=10)

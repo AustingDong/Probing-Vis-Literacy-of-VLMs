@@ -33,7 +33,6 @@ COPY --chown=user ./images /home/user/app/images
 
 # Install dependencies as "user"
 RUN pip install --no-cache-dir --user -e .
-RUN pip install --no-cache-dir --user opencv-python
 RUN pip install --no-cache-dir --user -r /code/requirements-gradio.txt
 
 CMD ["python", "app.py"]
