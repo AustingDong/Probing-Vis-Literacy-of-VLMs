@@ -82,4 +82,10 @@ docker run -p 7860:7860 probing-vis-literacy
 
 ## Citation
 
-## Acknowledgements
+## 🙏 Acknowledgements
+
+This project is built upon and inspired by the [Janus](https://github.com/deepseek-ai/Janus) repository. We sincerely thank the original authors for their excellent work and open-source contributions.
+
+We are also grateful to the members of the UW Insight Lab — F. Feng, X. Yu, and V. Bector — for their valuable feedback. Special thanks to F. Shi for insightful discussions and suggestions.
+
+L. Dong is supported by the Cheriton School of Computer Science Undergraduate Research Fellowship.
