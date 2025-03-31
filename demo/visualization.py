@@ -296,7 +296,7 @@ class VisualizationJanus(Visualization):
         self._modify_layers()
         self._register_hooks_activations()
 
-    def forward_backward(self, input_tensor, tokenizer, temperature, top_p, target_token_idx=None, visual_method="softmax", focus="Visual Encoder"):
+    def forward_backward(self, input_tensor, tokenizer, temperature, top_p, target_token_idx=None, visual_method="softmax", focus="Language Model"):
         # Forward
         image_embeddings, inputs_embeddings, outputs = self.model(input_tensor, tokenizer, temperature, top_p)
         print(input_tensor.keys())
@@ -304,24 +304,18 @@ class VisualizationJanus(Visualization):
         start_idx = 620
         self.model.zero_grad()
 
+        logits_prob = F.softmax(outputs.logits, dim=-1)
+        if target_token_idx == -1:
+            loss = logits_prob.max(dim=-1).values.sum()
+        else:
+            loss = logits_prob.max(dim=-1).values[0, start_idx + target_token_idx]
+        loss.backward()
         
-        
-        if focus == "Visual Encoder":
-            loss = outputs.logits.max(dim=-1).values[0, start_idx + target_token_idx]
-            loss.backward()
-        
-        elif focus == "Language Model":
-            if target_token_idx == -1:
-                loss = outputs.logits.max(dim=-1).values.sum()
-            else:
-                loss = outputs.logits.max(dim=-1).values[0, start_idx + target_token_idx]
-            loss.backward()
-            
-            self.activations = self.activations = [layer.attn_sigmoid_weights for layer in self.target_layers] if visual_method == "sigmoid" else [layer.get_attn_map() for layer in self.target_layers]
-            self.gradients = [layer.get_attn_gradients() for layer in self.target_layers]
+        self.activations = self.activations = [layer.attn_sigmoid_weights for layer in self.target_layers] if visual_method == "sigmoid" else [layer.get_attn_map() for layer in self.target_layers]
+        self.gradients = [layer.get_attn_gradients() for layer in self.target_layers]
     
     @spaces.GPU(duration=120)
-    def generate_cam(self, input_tensor, tokenizer, temperature, top_p, target_token_idx=None, visual_method="softmax", focus="Visual Encoder", accumulate_method="sum"):
+    def generate_cam(self, input_tensor, tokenizer, temperature, top_p, target_token_idx=None, visual_method="softmax", focus="Language Model", accumulate_method="sum"):
         
         self.setup_grads()
 
@@ -329,25 +323,14 @@ class VisualizationJanus(Visualization):
         self.forward_backward(input_tensor, tokenizer, temperature, top_p, target_token_idx, visual_method, focus)
         
         start_idx = 620
-        if focus == "Visual Encoder":
-
-            cam_sum = self.grad_cam_vis()
-            cam_sum, grid_size = self.process(cam_sum)
-            return cam_sum, grid_size, start_idx
-
-        elif focus == "Language Model":
             
-            # cam_sum = self.grad_cam_llm(mean_inside=True)
-            
-            images_seq_mask = input_tensor.images_seq_mask[0].detach().cpu().tolist()
-            
-            # cam_sum_lst, grid_size = self.process_multiple(cam_sum, start_idx, images_seq_mask)
+        images_seq_mask = input_tensor.images_seq_mask[0].detach().cpu().tolist()
 
-            cams = self.attn_guided_cam()
-            cam_sum_lst, grid_size = self.process_multiple_acc(cams, start_idx, images_seq_mask, accumulate_method=accumulate_method)
+        cams = self.attn_guided_cam()
+        cam_sum_lst, grid_size = self.process_multiple_acc(cams, start_idx, images_seq_mask, accumulate_method=accumulate_method)
 
 
-            return cam_sum_lst, grid_size, start_idx
+        return cam_sum_lst, grid_size, start_idx
 
 
 
@@ -371,13 +354,14 @@ class VisualizationLLaVA(Visualization):
         self.model.zero_grad()
         print("outputs_raw", outputs_raw)
 
-        loss = outputs_raw.logits.max(dim=-1).values.sum()
+        logits_prob = F.softmax(outputs_raw.logits, dim=-1)
+        loss = logits_prob.max(dim=-1).values.sum()
         loss.backward()
         self.activations = [layer.get_attn_map() for layer in self.target_layers]
         self.gradients = [layer.get_attn_gradients() for layer in self.target_layers]
 
     @spaces.GPU(duration=120)
-    def generate_cam(self, inputs, tokenizer, temperature, top_p, target_token_idx=None, visual_method="softmax", focus="Visual Encoder", accumulate_method="sum"):
+    def generate_cam(self, inputs, tokenizer, temperature, top_p, target_token_idx=None, visual_method="softmax", focus="Language Model", accumulate_method="sum"):
         
         self.setup_grads()
         self.forward_backward(inputs)
@@ -416,29 +400,22 @@ class VisualizationChartGemma(Visualization):
     
     def forward_backward(self, inputs, focus, start_idx, target_token_idx, visual_method="softmax"):
         outputs_raw = self.model(**inputs, output_hidden_states=True)
-        if focus == "Visual Encoder":
-            
-            self.model.zero_grad()
-
-            loss = outputs_raw.logits.max(dim=-1).values[0, start_idx + target_token_idx]
-            loss.backward()
-        
-        elif focus == "Language Model":
+        if focus == "Language Model":
             self.model.zero_grad()
             print("logits shape:", outputs_raw.logits.shape)
             print("start_idx:", start_idx)
-            if target_token_idx == -1:
-                logits_prob = F.softmax(outputs_raw.logits, dim=-1)
-                loss = logits_prob.max(dim=-1).values.sum()
 
+            logits_prob = F.softmax(outputs_raw.logits, dim=-1)
+            if target_token_idx == -1:
+                loss = logits_prob.max(dim=-1).values.sum()
             else:
-                loss = outputs_raw.logits.max(dim=-1).values[0, start_idx + target_token_idx]
+                loss = logits_prob.max(dim=-1).values[0, start_idx + target_token_idx]
             loss.backward()
             self.activations = [layer.attn_sigmoid_weights for layer in self.target_layers] if visual_method == "sigmoid" else [layer.get_attn_map() for layer in self.target_layers]
             self.gradients = [layer.get_attn_gradients() for layer in self.target_layers]
     
     @spaces.GPU(duration=120)
-    def generate_cam(self, inputs, tokenizer, temperature, top_p, target_token_idx=None, visual_method="softmax", focus="Visual Encoder", accumulate_method="sum"):
+    def generate_cam(self, inputs, tokenizer, temperature, top_p, target_token_idx=None, visual_method="softmax", focus="Language Model", accumulate_method="sum"):
         
         # Forward pass
         self.setup_grads()
@@ -457,19 +434,11 @@ class VisualizationChartGemma(Visualization):
 
 
         self.forward_backward(inputs, focus, start_idx, target_token_idx, visual_method)
-        if focus == "Visual Encoder":
-            
-            cam_sum = self.grad_cam_vis()
-            cam_sum, grid_size = self.process(cam_sum, remove_cls=False)
 
-            return cam_sum, grid_size, start_idx
+        cams = self.attn_guided_cam()
+        cam_sum_lst, grid_size = self.process_multiple_acc(cams, start_idx, images_seq_mask, accumulate_method=accumulate_method)
 
-        elif focus == "Language Model":
-
-            cams = self.attn_guided_cam()
-            cam_sum_lst, grid_size = self.process_multiple_acc(cams, start_idx, images_seq_mask, accumulate_method=accumulate_method)
-
-            # cams shape: [layers, 1, seq_len, seq_len]
+        # cams shape: [layers, 1, seq_len, seq_len]
             
 
 

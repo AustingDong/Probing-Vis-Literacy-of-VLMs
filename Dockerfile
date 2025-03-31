@@ -1,6 +1,17 @@
-FROM python:3.10
+FROM nvidia/cuda:12.2.0-devel-ubuntu22.04
 
 COPY ./requirements-gradio.txt /code/requirements-gradio.txt
+
+# Install Python 3.10 and pip
+RUN apt-get update && apt-get install -y \
+    software-properties-common \
+    && add-apt-repository ppa:deadsnakes/ppa \
+    && apt-get update && apt-get install -y \
+    python3.10 python3.10-venv python3.10-dev python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Make python3.10 the default
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1
 
 # Install system dependencies and create user
 RUN apt-get update && apt-get install -y --no-install-recommends \
