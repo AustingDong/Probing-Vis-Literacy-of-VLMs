@@ -25,8 +25,6 @@
     <img src="images/result_examples/chart_types_horizontal.png" alt="Example Preview" />
 </div>
 
-## Introduction
-
 ## 🚀 Quick Start
 
 <details>
