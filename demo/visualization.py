@@ -304,11 +304,11 @@ class VisualizationJanus(Visualization):
         start_idx = 620
         self.model.zero_grad()
 
-        logits_prob = F.softmax(outputs.logits, dim=-1)
+        logits = outputs.logits
         if target_token_idx == -1:
-            loss = logits_prob.max(dim=-1).values.sum()
+            loss = logits.max(dim=-1).values.sum()
         else:
-            loss = logits_prob.max(dim=-1).values[0, start_idx + target_token_idx]
+            loss = logits.max(dim=-1).values[0, start_idx + target_token_idx]
         loss.backward()
         
         self.activations = self.activations = [layer.attn_sigmoid_weights for layer in self.target_layers] if visual_method == "sigmoid" else [layer.get_attn_map() for layer in self.target_layers]
@@ -354,8 +354,8 @@ class VisualizationLLaVA(Visualization):
         self.model.zero_grad()
         print("outputs_raw", outputs_raw)
 
-        logits_prob = F.softmax(outputs_raw.logits, dim=-1)
-        loss = logits_prob.max(dim=-1).values.sum()
+        logits = outputs_raw.logits
+        loss = logits.max(dim=-1).values.sum()
         loss.backward()
         self.activations = [layer.get_attn_map() for layer in self.target_layers]
         self.gradients = [layer.get_attn_gradients() for layer in self.target_layers]
@@ -405,11 +405,12 @@ class VisualizationChartGemma(Visualization):
             print("logits shape:", outputs_raw.logits.shape)
             print("start_idx:", start_idx)
 
-            logits_prob = F.softmax(outputs_raw.logits, dim=-1)
+            logits = outputs_raw.logits
+
             if target_token_idx == -1:
-                loss = logits_prob.max(dim=-1).values.sum()
+                loss = logits.max(dim=-1).values.sum()
             else:
-                loss = logits_prob.max(dim=-1).values[0, start_idx + target_token_idx]
+                loss = logits.max(dim=-1).values[0, start_idx + target_token_idx]
             loss.backward()
             self.activations = [layer.attn_sigmoid_weights for layer in self.target_layers] if visual_method == "sigmoid" else [layer.get_attn_map() for layer in self.target_layers]
             self.gradients = [layer.get_attn_gradients() for layer in self.target_layers]
