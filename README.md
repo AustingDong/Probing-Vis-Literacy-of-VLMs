@@ -78,7 +78,7 @@ docker run -p 7860:7860 probing-vis-literacy
 
 </div>
 
-## Citation
+## 📚 Citation
 
 ## 🙏 Acknowledgements
 
