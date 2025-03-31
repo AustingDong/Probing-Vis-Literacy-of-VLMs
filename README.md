@@ -13,11 +13,11 @@
     <a href="https://huggingface.co/uw-insight-lab" target="_blank">
         <img src="https://img.shields.io/badge/HuggingFace-UW Insight Lab-yellow?logo=huggingface" alt="Hugging Face" />
     </a>
-    <a href="https://github.com/AustingDong/Probing-Vis-Literacy-of-Vision-Language-Models/blob/main/LICENSE" target="_blank">
-        <img src="https://img.shields.io/github/license/AustingDong/Probing-Vis-Literacy-of-Vision-Language-Models" alt="GitHub License" />
+    <a href="https://github.com/AustingDong/Probing-Vis-Literacy-of-VLMs/blob/main/LICENSE" target="_blank">
+        <img src="https://img.shields.io/github/license/AustingDong/Probing-Vis-Literacy-of-VLMs" alt="GitHub License" />
     </a>
-    <a href="https://github.com/AustingDong/Probing-Vis-Literacy-of-Vision-Language-Models/stargazers" target="_blank">
-        <img src="https://img.shields.io/github/stars/AustingDong/Probing-Vis-Literacy-of-Vision-Language-Models?style=social" alt="GitHub Stars"/>
+    <a href="https://github.com/AustingDong/Probing-Vis-Literacy-of-VLMs/stargazers" target="_blank">
+        <img src="https://img.shields.io/github/stars/AustingDong/Probing-Vis-Literacy-of-VLMs?style=social" alt="GitHub Stars"/>
     </a>
 </div>
 
