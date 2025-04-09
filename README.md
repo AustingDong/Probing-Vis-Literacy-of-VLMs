@@ -6,7 +6,11 @@
     <h1>Probing Vis Literacy of Vision Language Models: the Good, the Bad, and the Ugly</h1>
 </div>
 
+<!-- Badges -->
 <div align="center">
+    <a href="https://arxiv.org/abs/2504.05445" target="_blank">
+        <img src="https://img.shields.io/badge/arXiv-2504.05445-b31b1b.svg" alt="arXiv">
+    </a>
     <a href="https://www.uw-insight-lab.com/" target="_blank">
         <img src="https://img.shields.io/badge/UW Insight Lab-Homepage-blue" alt="UW Insight Lab" />
     </a>
