@@ -79,6 +79,17 @@ docker run -p 7860:7860 probing-vis-literacy
 </div>
 
 ## 📚 Citation
+```
+@misc{dong2025probingvisualizationliteracyvision,
+      title={Probing the Visualization Literacy of Vision Language Models: the Good, the Bad, and the Ugly}, 
+      author={Lianghan Dong and Anamaria Crisan},
+      year={2025},
+      eprint={2504.05445},
+      archivePrefix={arXiv},
+      primaryClass={cs.HC},
+      url={https://arxiv.org/abs/2504.05445}, 
+}
+```
 
 ## 🙏 Acknowledgements
 
