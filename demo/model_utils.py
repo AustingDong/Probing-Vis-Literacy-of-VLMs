@@ -66,6 +66,7 @@ class Janus_Utils(Model_Utils):
                                                     language_config=language_config,
                                                     trust_remote_code=True,
                                                     ignore_mismatched_sizes=True,
+                                                    low_cpu_mem_usage=True
                                                     )
         self.vl_gpt, self.dtype, self.cuda_device = set_dtype_device(self.vl_gpt)
         self.vl_chat_processor = VLChatProcessor.from_pretrained(model_path)

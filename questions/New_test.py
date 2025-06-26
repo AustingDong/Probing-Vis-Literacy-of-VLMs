@@ -62,7 +62,7 @@ new_test_questions=[
     [ 
         "Choropleth",
         "Is the GDP of CA higher than NV?",
-        "images/New_test/Choropleth_New.png"
+        "images/New_test/Choropleth.png"
     ],
 
     [
