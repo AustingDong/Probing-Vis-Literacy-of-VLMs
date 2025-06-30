@@ -111,7 +111,7 @@
         "D": "50"
       }
     ],
-    "correct_answer": "3"
+    "correct_answer": "B"
   },
   {
     "type": "Pie Chart",
@@ -222,13 +222,13 @@
         "A": "China"
       },
       {
-        "B": " USA"
+        "B": "USA"
       },
       {
-        "C": " Canada"
+        "C": "Canada"
       },
       {
-        "D": " UK"
+        "D": "UK"
       }
     ],
     "correct_answer": "A"
