@@ -8,6 +8,7 @@ from openai import OpenAI
 from demo.model_utils import *
 from pydantic import BaseModel
 
+
 questions = json.load(open("evaluate/new_test.json", "r"))
 judge_client = OpenAI(api_key=os.environ["GEMINI_HCI_API_KEY"], 
                             base_url="https://generativelanguage.googleapis.com/v1beta/openai/")
