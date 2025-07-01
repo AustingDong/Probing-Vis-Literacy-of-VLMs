@@ -49,12 +49,16 @@ def llm_judge(answer, options, correct_answer):
     return json.loads(answer)["result"]
 
 def parse_and_judge(parser, response, correct_answer):
-    res = parser.parse(response)
-    answer = parser["answer"]
-
-    return answer == correct_answer
+    try:
+        res = parser.parse(response)
+        answer = parser["answer"]
+        return answer == correct_answer, True
+    except Exception as e:
+        print(f"not judged, res: {response}")
+        return False, False
 
     
+
 
 def evaluate(model_type, num_eval = 10):
     sum_correct = np.zeros(len(questions))
@@ -85,77 +89,85 @@ def evaluate(model_type, num_eval = 10):
                             base_url="https://generativelanguage.googleapis.com/v1beta/openai/")
 
         for question_idx, question in enumerate(questions):
-            chart_type = question["type"]
-            q = question["question"]
-            img_path = question["img_path"]
-            options = question.get("options", None)
-            correct_answer = question.get("correct_answer", None)
+            judged = False
+            fail_cnt = 0
+            LLM_as_Judge = True
+            while not judged and fail_cnt < 2:
+                chart_type = question["type"]
+                q = question["question"]
+                img_path = question["img_path"]
+                options = question.get("options", None)
+                correct_answer = question.get("correct_answer", None)
 
-            image = np.array(Image.open(img_path).convert("RGB"))
+                image = np.array(Image.open(img_path).convert("RGB"))
 
-            input_text, parser = format_input(q, options)
-            
-            input_text = f"Options: {options}\nQuestion: {q}\n"
-            if model_type.split('-')[0] == "GPT":
-                base64_image = encode_image(img_path)
-                completion = client.chat.completions.create(
-                    model="gpt-4o",
-                    messages=[
-                        {
-                            "role": "user",
-                            "content": [
-                                { "type": "text", "text": f"{input_text}" },
-                                {
-                                    "type": "image_url",
-                                    "image_url": {
-                                        "url": f"data:image/jpeg;base64,{base64_image}",
-                                    },
-                                },
-                            ],
-                        }
-                    ],
-                )
-                answer = completion.choices[0].message.content
-
-            elif model_type.split('-')[0] == "Gemini":
-                base64_image = encode_image(img_path)
-                completion = client.chat.completions.create(
-                    model="gemini-2.0-flash",
-                    messages=[
-                        {
-                            "role": "user",
-                            "content": [
-                                { "type": "text", "text": f"{input_text}" },
-                                {
-                                    "type": "image_url",
-                                    "image_url": {
-                                        "url": f"data:image/jpeg;base64,{base64_image}",
-                                    },
-                                },
-                            ],
-                        }
-                    ],
-                )
-                answer = completion.choices[0].message.content
-
-            else:
+                input_text, parser = format_input(q, options)
                 
-                prepare_inputs = model_utils.prepare_inputs(input_text, image)
-                temperature = 0.1
-                top_p = 0.95
+                input_text = f"Options: {options}\nQuestion: {q}\n"
+                if model_type.split('-')[0] == "GPT":
+                    base64_image = encode_image(img_path)
+                    completion = client.chat.completions.create(
+                        model="gpt-4o",
+                        messages=[
+                            {
+                                "role": "user",
+                                "content": [
+                                    { "type": "text", "text": f"{input_text}" },
+                                    {
+                                        "type": "image_url",
+                                        "image_url": {
+                                            "url": f"data:image/jpeg;base64,{base64_image}",
+                                        },
+                                    },
+                                ],
+                            }
+                        ],
+                    )
+                    answer = completion.choices[0].message.content
 
-                if model_type.split('-')[0] == "Janus":
-                    inputs_embeds = model_utils.generate_inputs_embeddings(prepare_inputs)
-                    outputs = model_utils.generate_outputs(inputs_embeds, prepare_inputs, temperature, top_p)
+                elif model_type.split('-')[0] == "Gemini":
+                    base64_image = encode_image(img_path)
+                    completion = client.chat.completions.create(
+                        model="gemini-2.0-flash",
+                        messages=[
+                            {
+                                "role": "user",
+                                "content": [
+                                    { "type": "text", "text": f"{input_text}" },
+                                    {
+                                        "type": "image_url",
+                                        "image_url": {
+                                            "url": f"data:image/jpeg;base64,{base64_image}",
+                                        },
+                                    },
+                                ],
+                            }
+                        ],
+                    )
+                    answer = completion.choices[0].message.content
+
                 else:
-                    outputs = model_utils.generate_outputs(prepare_inputs, temperature, top_p)
+                    
+                    prepare_inputs = model_utils.prepare_inputs(input_text, image)
+                    temperature = 0.1
+                    top_p = 0.95
 
-                sequences = outputs.sequences.cpu().tolist()
-                answer = tokenizer.decode(sequences[0], skip_special_tokens=True)
+                    if model_type.split('-')[0] == "Janus":
+                        inputs_embeds = model_utils.generate_inputs_embeddings(prepare_inputs)
+                        outputs = model_utils.generate_outputs(inputs_embeds, prepare_inputs, temperature, top_p)
+                    else:
+                        outputs = model_utils.generate_outputs(prepare_inputs, temperature, top_p)
 
-            # Judge the answer
-            # result_judge = llm_judge(answer, options, correct_answer)
-            result_judge = parse_and_judge(parser, answer, correct_answer)
+                    sequences = outputs.sequences.cpu().tolist()
+                    answer = tokenizer.decode(sequences[0], skip_special_tokens=True)
+
+                # Judge the answer
+                if LLM_as_Judge:
+                    break
+                fail_cnt += 1
+                result_judge, judged = parse_and_judge(parser, answer, correct_answer)
+            if not judged and LLM_as_Judge:
+                result_judge = llm_judge(answer, options, correct_answer)
             sum_correct[question_idx] += 1 if result_judge else 0
             print(f"Model: {model_type}, Question: {question_idx + 1}, Answer: {answer}, Correct: {result_judge}")
 
@@ -177,7 +189,7 @@ def evaluate(model_type, num_eval = 10):
 if __name__ == '__main__':
 
     # models = ["Janus-Pro-1B", "ChartGemma", "GPT-4o", "Gemini-2.0-flash", "Janus-Pro-7B", "LLaVA-1.5-7B"]
-    models = ["LLaVA-1.5-7B", "Gemini-2.0-flash", "Janus-Pro-7B", ]
+    models = ["ChartGemma", "Gemini-2.0-flash", "GPT-4o", ]
 
     for model_type in models:
         evaluate(model_type=model_type, num_eval=10)
