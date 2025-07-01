@@ -7,6 +7,7 @@ from PIL import Image
 from openai import OpenAI
 from demo.model_utils import *
 from pydantic import BaseModel
+from format_input import format_input
 
 
 questions = json.load(open("evaluate/new_test.json", "r"))
@@ -46,6 +47,13 @@ def llm_judge(answer, options, correct_answer):
     answer = completion.choices[0].message.content
     print(f"Judge Answer: {answer}")
     return json.loads(answer)["result"]
+
+def parse_and_judge(parser, response, correct_answer):
+    res = parser.parse(response)
+    answer = parser["answer"]
+
+    return answer == correct_answer
+
     
 
 def evaluate(model_type, num_eval = 10):
@@ -85,6 +93,7 @@ def evaluate(model_type, num_eval = 10):
 
             image = np.array(Image.open(img_path).convert("RGB"))
 
+            input_text, parser = format_input(q, options)
             
             input_text = f"Options: {options}\nQuestion: {q}\n"
             if model_type.split('-')[0] == "GPT":
@@ -145,7 +154,8 @@ def evaluate(model_type, num_eval = 10):
                 answer = tokenizer.decode(sequences[0], skip_special_tokens=True)
 
             # Judge the answer
-            result_judge = llm_judge(answer, options, correct_answer)
+            # result_judge = llm_judge(answer, options, correct_answer)
+            result_judge = parse_and_judge(parser, answer, correct_answer)
             sum_correct[question_idx] += 1 if result_judge else 0
             print(f"Model: {model_type}, Question: {question_idx + 1}, Answer: {answer}, Correct: {result_judge}")
 
