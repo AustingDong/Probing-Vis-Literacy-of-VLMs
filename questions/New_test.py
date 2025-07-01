@@ -1,25 +1,25 @@
 new_test_questions=[
     [
         "LineChart",
-        "What is the blood sugar level three hours after a meal",
+        "What is the approximate blood sugar level three hours after a meal?",
         "images/New_test/LineChart.png" 
     ],
 
     [
         "BarChart",
-        "Which student has the highest score in midterm?",
+        "Which student has the highest grade in midterm?",
         "images/New_test/BarChart.png"
     ],
 
     [
         "StackedBar",
-        "What is the price of headphone in Japan?",
+        "What is the approximate price of headphones in Japan?",
         "images/New_test/StackedBar.png"
     ],
 
     [
         "100%StackedBar",
-        "Which country has the largest proportion of mouse price?",
+        "Relative to other computer peripherals, which country has the most expensive prices for a mouse?",
         "images/New_test/Stacked100.png"
     ],
     
@@ -31,31 +31,31 @@ new_test_questions=[
     
     [
         "Histogram",
-        "Which range of distance of trip people prefers the most?",
+        "What trip distance range is the most common?",
         "images/New_test/Histogram.png"
     ],
 
     [
         "Scatterplot",
-        "What is the weight of the individual that has highest height?", 
+        "What is the weight of the tallest individual?", 
         "images/New_test/Scatterplot.png"
     ],
 
     [
         "AreaChart",
-        "At which month the price of tea is the highest?",
+        "In which month is the price of tea the highest?",
         "images/New_test/AreaChart.png"
     ],
 
     [
         "StackedArea",
-        "What was the ratio of boys named 'Justin' to boys named 'Kevin' in the 3rd month in the USA?",
+        "What was the ratio of boys named 'Justin' to boys named 'Kevin' in the 3rd month?",
         "images/New_test/StackedArea.png"
     ],
 
     [
         "BubbleChart",
-        "What is the number of employees of the company that has lowest annual income?",
+        "What is the total number of employees at the company with the lowest annual income?",
         "images/New_test/BubbleChart.png"
     ],
 
