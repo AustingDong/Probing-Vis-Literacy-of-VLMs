@@ -1,28 +1,29 @@
 [
   {
-    "type": "Area Chart",
-    "img_path": "images/New_test/AreaChart.png",
-    "question": "At which month the price of teAreaa is the highest?",
+    "type": "Line Chart",
+    "img_path": "images/New_test/LineChart.png",
+    "question": "What is the approximate blood sugar level three hours after a meal?",
     "options": [
       {
-        "A": "1"
+        "A": "18"
       },
       {
-        "B": "3"
+        "B": "70"
       },
       {
-        "C": "4"
+        "C": "90"
       },
       {
-        "D": "7"
+        "D": "50"
       }
     ],
-    "correct_answer": "C"
+    "correct_answer": "B"
   },
+
   {
     "type": "Bar Chart",
     "img_path": "images/New_test/BarChart.png",
-    "question": "Which student has the highest score in midterm?",
+    "question": "Which student has the highest grade in midterm?",
     "options": [
       {
         "A": "Bob"
@@ -39,80 +40,49 @@
     ],
     "correct_answer": "D"
   },
+
   {
-    "type": "Bubble Chart",
-    "img_path": "images/New_test/BubbleChart.png",
-    "question": "What is the number of employees of the company that has lowest annual income?",
+    "type": "Stacked Bar Chart",
+    "img_path": "images/New_test/StackedBar.png",
+    "question": "What is the approximate price of headphones in Japan?",
     "options": [
       {
-        "A": "5"
+        "A": "10"
       },
       {
-        "B": "20"
+        "B": "30"
       },
       {
-        "C": "85"
+        "C": "50"
       },
       {
-        "D": "60"
+        "D": "70"
       }
     ],
-    "correct_answer": "C"
+    "correct_answer": "B"
   },
+
   {
-    "type": "Choropleth Map",
-    "img_path": "images/New_test/Choropleth.png",
-    "question": "Is the GDP of CA higher than NV?",
+    "type": "100% Stacked Bar Chart",
+    "img_path": "images/New_test/Stacked100.png",
+    "question": "Relative to other computer peripherals, which country has the most expensive prices for a mouse?",
     "options": [
       {
-        "A": "True"
+        "A": "Canada"
       },
       {
-        "B": "False"
+        "B": "China"
+      },
+      {
+        "C": "Japan"
+      },
+      {
+        "D": "Korea"
       }
     ],
     "correct_answer": "A"
   },
-  {
-    "type": "Histogram",
-    "img_path": "images/New_test/Histogram.png",
-    "question": "Which range of distance of trip people prefers the most?",
-    "options": [
-      {
-        "A": "10-20km"
-      },
-      {
-        "B": "30-40km"
-      },
-      {
-        "C": "50-60km"
-      },
-      {
-        "D": "70-80km"
-      }
-    ],
-    "correct_answer": "C"
-  },
-  {
-    "type": "Line Chart",
-    "img_path": "images/New_test/LineChart.png",
-    "question": "What is the blood sugar level three hours after a meal",
-    "options": [
-      {
-        "A": "18"
-      },
-      {
-        "B": "70"
-      },
-      {
-        "C": "90"
-      },
-      {
-        "D": "50"
-      }
-    ],
-    "correct_answer": "3"
-  },
+
   {
     "type": "Pie Chart",
     "img_path": "images/New_test/PieChart.png",
@@ -133,10 +103,32 @@
     ],
     "correct_answer": "B"
   },
+
+  {
+    "type": "Histogram",
+    "img_path": "images/New_test/Histogram.png",
+    "question": "What trip distance range is the most common?",
+    "options": [
+      {
+        "A": "10-20km"
+      },
+      {
+        "B": "30-40km"
+      },
+      {
+        "C": "50-60km"
+      },
+      {
+        "D": "70-80km"
+      }
+    ],
+    "correct_answer": "C"
+  },
+
   {
     "type": "Scatter Chart",
     "img_path": "images/New_test/Scatterplot.png",
-    "question": "What is the weight of the individual that has highest height?",
+    "question": "What is the weight of the tallest individual?",
     "options": [
       {
         "A": "96"
@@ -151,12 +143,34 @@
         "D": "25"
       }
     ],
-    "correct_answer": "A"
+    "correct_answer": "B"
   },
+
+  {
+    "type": "Area Chart",
+    "img_path": "images/New_test/AreaChart.png",
+    "question": "In which month is the price of tea the highest?",
+    "options": [
+      {
+        "A": "1"
+      },
+      {
+        "B": "3"
+      },
+      {
+        "C": "4"
+      },
+      {
+        "D": "7"
+      }
+    ],
+    "correct_answer": "C"
+  },
+  
   {
     "type": "Stacked Area Chart",
     "img_path": "images/New_test/StackedArea.png",
-    "question": "What was the ratio of boys named 'Justin' to boys named 'Kevin' in the 3rd month in the USA?",
+    "question": "What was the ratio of boys named 'Justin' to boys named 'Kevin' in the 3rd month?",
     "options": [
       {
         "A": "1:1"
@@ -173,46 +187,48 @@
     ],
     "correct_answer": "C"
   },
+
+  
   {
-    "type": "Stacked Bar Chart",
-    "img_path": "images/New_test/StackedBar.png",
-    "question": "What is the price of headphone in Japan?",
+    "type": "Bubble Chart",
+    "img_path": "images/New_test/BubbleChart.png",
+    "question": "What is the total number of employees at the company with the lowest annual income?",
     "options": [
       {
-        "A": "10"
+        "A": "5"
       },
       {
-        "B": "30"
+        "B": "20"
       },
       {
-        "C": "50"
+        "C": "85"
       },
       {
-        "D": "70"
+        "D": "60"
       }
     ],
-    "correct_answer": "B"
+    "correct_answer": "C"
   },
+  
+  
+  
+  
+  
   {
-    "type": "100% Stacked Bar Chart",
-    "img_path": "images/New_test/Stacked100.png",
-    "question": "Which country has the largest proportion of mouse price?",
+    "type": "Choropleth Map",
+    "img_path": "images/New_test/Choropleth.png",
+    "question": "Is the GDP of CA higher than NV?",
     "options": [
       {
-        "A": "Canada"
+        "A": "True"
       },
       {
-        "B": "China"
-      },
-      {
-        "C": "Japan"
-      },
-      {
-        "D": "Korea"
+        "B": "False"
       }
     ],
     "correct_answer": "A"
   },
+
   {
     "type": "Treemap",
     "img_path": "images/New_test/TreeMap.png",
