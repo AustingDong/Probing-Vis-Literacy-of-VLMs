@@ -1,0 +1,60 @@
+# AMD's ROCm 7.2 images support gfx950 (Instinct MI350/MI355). Keep PyTorch
+# aligned with the NVIDIA image so the application dependency set is identical.
+FROM rocm/pytorch:rocm7.2.4_ubuntu24.04_py3.12_pytorch_release_2.9.1@sha256:7fe531fa185af260352fe7fbb3fa64ad749abe72adf0600a648c4692801b125a
+
+# AMD's base image can contain a pre-existing UID/GID 1000 account. A high
+# default avoids collisions; named-volume ownership is prepared at startup.
+ARG APP_UID=10000
+ARG APP_GID=10000
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    HOME=/home/user \
+    PATH=/home/user/.local/bin:/opt/conda/bin:$PATH \
+    PYTHONPATH=/home/user/app \
+    HF_HOME=/home/user/.cache/huggingface \
+    TORCH_HOME=/home/user/.cache/torch \
+    MPLCONFIGDIR=/home/user/.cache/matplotlib \
+    GRADIO_ALLOW_FLAGGING=never \
+    GRADIO_SERVER_NAME=0.0.0.0 \
+    GRADIO_SERVER_PORT=7860 \
+    GRADIO_SHARE=false \
+    REQUIRE_GPU=1 \
+    GPU_BACKEND=rocm
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        fonts-dejavu-core \
+        libglib2.0-0 \
+        libgomp1 \
+    && groupadd --gid "${APP_GID}" user \
+    && useradd --create-home --uid "${APP_UID}" --gid "${APP_GID}" --shell /bin/bash user \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /home/user/app
+
+# Do not install torch/torchvision from PyPI here: doing so would replace the
+# ROCm-enabled builds already supplied by the AMD base image.
+COPY requirements-runtime.txt requirements-gradio.txt ./
+RUN python -m pip install --no-cache-dir \
+        --requirement requirements-runtime.txt \
+        --requirement requirements-gradio.txt
+
+COPY --chown=user:user . .
+
+RUN mkdir -p \
+        /home/user/.cache/huggingface \
+        /home/user/.cache/torch \
+        /home/user/.cache/matplotlib \
+        /home/user/app/results \
+    && python -c "import cv2, gradio, spaces, torch, torchvision, transformers; assert torch.__version__.startswith('2.9.1'); assert torch.version.hip is not None; assert torchvision.__version__.startswith('0.24.1'); assert transformers.__version__ == '4.48.2'" \
+    && chown -R user:user /home/user/.cache /home/user/app/results
+
+EXPOSE 7860
+
+# The checker validates a real HIP kernel through PyTorch's torch.cuda API,
+# prepares mounted volumes, and drops root privileges before starting Gradio.
+CMD ["python", "docker/verify_runtime.py", "--", "python", "app.py"]

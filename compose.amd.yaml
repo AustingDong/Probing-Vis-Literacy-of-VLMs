@@ -1,0 +1,33 @@
+services:
+  app:
+    image: probing-vis-literacy:amd-rocm
+    build:
+      context: .
+      dockerfile: Dockerfile.amd
+    ports:
+      - "7860:7860"
+    environment:
+      REQUIRE_GPU: "1"
+      GPU_BACKEND: rocm
+      GRADIO_SHARE: "false"
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri:/dev/dri
+    group_add:
+      - video
+      - render
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp=unconfined
+    ipc: host
+    shm_size: "8gb"
+    volumes:
+      - huggingface-cache:/home/user/.cache/huggingface
+      - model-cache-amd:/home/user/.cache/torch
+      - app-results:/home/user/app/results
+
+volumes:
+  huggingface-cache:
+  model-cache-amd:
+  app-results:

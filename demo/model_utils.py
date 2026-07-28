@@ -6,17 +6,30 @@ from transformers import AutoConfig, AutoModelForCausalLM, LlavaForConditionalGe
 from transformers import CLIPProcessor, CLIPModel
 from janus.models import MultiModalityCausalLM, VLChatProcessor
 
+def get_inference_dtype(precision=16):
+    cuda_available = torch.cuda.is_available()
+    if precision == 16 and cuda_available:
+        return (
+            torch.bfloat16
+            if torch.cuda.is_bf16_supported()
+            else torch.float16
+        )
+
+    # Float16 model execution is not consistently supported on CPU.
+    return torch.float32
+
+
 @spaces.GPU(duration=120)
 def set_dtype_device(model, precision=16, device_map=None):
-    dtype = (torch.bfloat16 if torch.cuda.is_available() else torch.float16) if precision==16 else (torch.bfloat32 if torch.cuda.is_available() else torch.float32)
-    cuda_device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    if torch.cuda.is_available():
-        model = model.to(dtype)
-        if not device_map:
-            model.cuda()
-    else:
-        torch.set_default_device("cpu")
-        model = model.to(dtype)
+    dtype = get_inference_dtype(precision)
+    cuda_device = "cuda" if torch.cuda.is_available() else "cpu"
+
+    if device_map:
+        # Accelerate owns device placement for dispatched models. Calling
+        # model.cuda() or model.to(device) afterwards can invalidate its hooks.
+        return model, dtype, cuda_device
+
+    model = model.to(device=cuda_device, dtype=dtype)
     return model, dtype, cuda_device
 
 
@@ -64,9 +77,10 @@ class Janus_Utils(Model_Utils):
         language_config._attn_implementation = 'eager'
         self.vl_gpt = AutoModelForCausalLM.from_pretrained(model_path,
                                                     language_config=language_config,
+                                                    torch_dtype=get_inference_dtype(),
+                                                    low_cpu_mem_usage=True,
                                                     trust_remote_code=True,
                                                     ignore_mismatched_sizes=True,
-                                                    low_cpu_mem_usage=True
                                                     )
         self.vl_gpt, self.dtype, self.cuda_device = set_dtype_device(self.vl_gpt)
         self.vl_chat_processor = VLChatProcessor.from_pretrained(model_path)
@@ -128,10 +142,13 @@ class LLaVA_Utils(Model_Utils):
             self.vl_gpt = LlavaForConditionalGeneration.from_pretrained(model_path,
                                                         low_cpu_mem_usage=True,
                                                         attn_implementation = 'eager',
+                                                        torch_dtype=get_inference_dtype(),
                                                         device_map="auto",
                                                         output_attentions=True
                                                         )
-            self.vl_gpt, self.dtype, self.cuda_device = set_dtype_device(self.vl_gpt)
+            self.vl_gpt, self.dtype, self.cuda_device = set_dtype_device(
+                self.vl_gpt, device_map="auto"
+            )
             self.processor = AutoProcessor.from_pretrained(model_path)
             self.tokenizer = self.processor.tokenizer
 
@@ -141,7 +158,7 @@ class LLaVA_Utils(Model_Utils):
             self.processor = AutoProcessor.from_pretrained(model_path)
 
             self.vl_gpt = LlavaOnevisionForConditionalGeneration.from_pretrained(model_path, 
-                                                                        torch_dtype=torch.float16,
+                                                                        torch_dtype=get_inference_dtype(),
                                                                         device_map="auto", 
                                                                         low_cpu_mem_usage=True,
                                                                         attn_implementation = 'eager',
@@ -221,7 +238,8 @@ class ChartGemma_Utils(Model_Utils):
         
         self.vl_gpt = PaliGemmaForConditionalGeneration.from_pretrained(
             model_path, 
-            torch_dtype=torch.float16,  
+            torch_dtype=get_inference_dtype(),
+            low_cpu_mem_usage=True,
             attn_implementation="eager", 
             output_attentions=True
         )
@@ -295,4 +313,3 @@ def add_title_to_image(image, title, font_size=50):
     return combined
     
 
-    

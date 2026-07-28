@@ -330,5 +330,9 @@ with gr.Blocks() as demo:
         outputs=[understanding_output, activation_map_output, understanding_target_token_decoded_output]
     )
     
-demo.launch(share=True)
+demo.launch(
+    server_name=os.getenv("GRADIO_SERVER_NAME", "0.0.0.0"),
+    server_port=int(os.getenv("GRADIO_SERVER_PORT", "7860")),
+    share=os.getenv("GRADIO_SHARE", "false").lower() in {"1", "true", "yes", "on"},
+)
 # demo.queue(concurrency_count=1, max_size=10).launch(server_name="0.0.0.0", server_port=37906, root_path="/path")
