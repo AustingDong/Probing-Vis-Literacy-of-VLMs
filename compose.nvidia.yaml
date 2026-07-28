@@ -1,13 +1,14 @@
 services:
   app:
-    image: probing-vis-literacy:gpu
+    image: probing-vis-literacy:nvidia
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.nvidia
     ports:
       - "7860:7860"
     environment:
-      REQUIRE_CUDA: "1"
+      REQUIRE_GPU: "1"
+      GPU_BACKEND: nvidia
       GRADIO_SHARE: "false"
     deploy:
       resources:

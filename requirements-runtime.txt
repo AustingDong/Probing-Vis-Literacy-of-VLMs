@@ -1,0 +1,20 @@
+# The custom attention implementations in demo/modified_attn.py target the
+# Transformers 4.48 API. Do not upgrade this independently.
+transformers==4.48.2
+huggingface-hub==0.28.1
+tokenizers==0.21.0
+safetensors==0.5.2
+accelerate==1.3.0
+
+# Model and visualization runtime.
+numpy==2.2.2
+timm==0.9.16
+sentencepiece==0.2.1
+attrdict3==2.0.2
+einops==0.8.0
+opencv-python-headless==4.11.0.86
+spaces==0.32.0
+matplotlib==3.10.0
+pillow==11.1.0
+pydantic==2.10.6
+psutil==5.9.8

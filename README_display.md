@@ -21,11 +21,16 @@ gradio app.py
 
 ### Docker
 
-You can also run this app using Docker
+You can also run this app using either the NVIDIA CUDA or AMD ROCm Docker
+entry point:
 
 ```shell
-docker build -t probing-vis-literacy .
-docker run -p 7860:7860 probing-vis-literacy
+docker compose -f compose.nvidia.yaml up --build
+# or, on a supported Linux ROCm host:
+docker compose -f compose.amd.yaml up --build
 ```
+
+See [README.md](README.md#docker-gpu-runtimes) for host requirements and GPU
+passthrough checks.
 
 ## Citation
