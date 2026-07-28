@@ -1,0 +1,28 @@
+services:
+  app:
+    image: probing-vis-literacy:gpu
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "7860:7860"
+    environment:
+      REQUIRE_CUDA: "1"
+      GRADIO_SHARE: "false"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    shm_size: "8gb"
+    volumes:
+      - huggingface-cache:/home/user/.cache/huggingface
+      - model-cache:/home/user/.cache/torch
+      - app-results:/home/user/app/results
+
+volumes:
+  huggingface-cache:
+  model-cache:
+  app-results:

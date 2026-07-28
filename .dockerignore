@@ -1,0 +1,17 @@
+.git
+.gitattributes
+.gradio
+.idea
+.vscode
+**/__pycache__
+**/*.py[cod]
+*.egg-info
+**/*.egg-info
+**/.ipynb_checkpoints
+*.ipynb
+results
+.pytest_cache
+.ruff_cache
+.mypy_cache
+.venv
+venv
