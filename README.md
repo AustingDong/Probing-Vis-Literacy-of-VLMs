@@ -1,6 +1,6 @@
 ---
 title: Probing-Vis-Literacy-of-VLMs
-emoji: 🐨
+emoji: 📊
 colorFrom: pink
 colorTo: yellow
 sdk: gradio
@@ -10,7 +10,33 @@ pinned: false
 license: mit
 ---
 
-Check out the configuration reference at <https://huggingface.co/docs/hub/spaces-config-reference>
+# Probing Vis Literacy of Vision Language Models: the Good, the Bad, and the Ugly
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Hugging Face Space](https://img.shields.io/badge/Hugging%20Face-Space-yellow)](https://huggingface.co/spaces/uw-insight-lab/Probing-Vis-Literacy-of-VLMs)
+
+![Visualization literacy example](images/examples/placeholder.png)
+
+An interactive Gradio application for probing the visualization literacy of
+vision-language models.
+
+## Quick start
+
+### Installation
+
+Python 3.10 to 3.12 is supported.
+
+```shell
+python -m pip install --no-cache-dir --user -e ".[gradio]"
+```
+
+### Run the Gradio app
+
+```shell
+python app.py
+```
+
+Open <http://localhost:7860>.
 
 ## Docker GPU runtimes
 
@@ -62,3 +88,7 @@ docker run --rm \
 Open <http://localhost:7860> after either stack starts. Model downloads and
 results use named volumes; the Hugging Face cache and results are shared
 between the two entry points, while the PyTorch cache is backend-specific.
+
+## Citation
+
+Citation information will be added with the accompanying publication.
